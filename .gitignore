@@ -5,6 +5,9 @@ __pycache__/
 # Virtual environment
 .venv/
 
+# Source data - local only
+raw/
+
 # Environment variables / secrets
 .env
 .env.*

@@ -1,0 +1,29 @@
+﻿error_category,error_code,subrule,field_code
+Filológicas - mecánicas,e_1,Without Fields,f_WOF_10
+Filológicas - mecánicas,e_1,E protética,f_11
+Filológicas - mecánicas,e_1,Regularización de la diéresis,f_112
+Filológicas - mecánicas,e_1,Regularización de sibilantes,f_1113
+Filológicas - mecánicas,e_1,Regularización de vibrantes,f_11114
+Filológicas - mecánicas,e_1,Adecuación de grafía labiovelar,f_111115
+Filológicas - mecánicas,e_1,Simplificación de grupos consonánticos,f_1111116
+Filológicas - mecánicas,e_1,Simplificación de grupos vocálicos,f_11111117
+Filológicas - mecánicas,e_1,Regularización de nasales ante labial,f_111111118
+Filológicas - instrucciones,e_2,Without Fields,f_WOF_20
+Filológicas - instrucciones,e_2,Regularización de H etimológica,f_21
+Filológicas - instrucciones,e_2,Regularización de labiales (b/v),f_222
+Filológicas - instrucciones,e_2,Regularización de i/y vocálicas,f_2223
+Filológicas - instrucciones,e_2,x sibilante → j,f_22224
+Filológicas - instrucciones,e_2,Regularización de la nasal palatal,f_222225
+Filológicas - instrucciones,e_2,No modificar otros idiomas,f_2222226
+Abreviaturas,e_3,Without Fields,f_WOF_30
+Abreviaturas,e_3,Expansión completa,f_31
+Abreviaturas,e_3,"Excepciones (desto/a/os, dello/a/os)",f_332
+Puntuación,e_4,Without Fields,f_WOF_40
+Puntuación,e_4,Punto (.),f_41
+Puntuación,e_4,"Coma (,)",f_442
+Acentuación,e_5,Without Fields,f_WOF_50
+Cambios,e_6,Without Fields,f_WOF_60
+Cambios,e_6,Inserción,f_61
+Cambios,e_6,Deleción,f_662
+Cambios,e_6,Sustitución,f_6663
+Cambios,e_6,Otros,f_66664
