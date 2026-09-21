@@ -17,9 +17,11 @@ It then:
    TXT inside ANN_Documents.
 6. Uses the ordinary packet-level modernised TXT as a fallback when the
    annotation export does not contain its TXT copy.
-7. Compares the discovered filename stems and packet numbers against the
+7. Locates the original pre-modernisation transcription ending in _GT.txt in
+   the ordinary reviewer packet.
+8. Compares the discovered filename stems and packet numbers against the
    documents expected in document_manifest.csv.
-8. Records any missing, duplicate and unexpected files across the 9 packets.
+9. Records any missing, duplicate and unexpected files across the 9 packets.
 
 The script creates two CSV outputs:
 
@@ -34,7 +36,8 @@ intermediate/extracted_exports/. Paths stored in file_manifest.csv are relative
 to the project directory, /workspaces/modernisation.
 
 This script only finds, extracts and maps files. It does not read or process the
-contents of the annotation JSONs, legend JSONs or modernised texts.
+contents of the annotation JSONs, legend JSONs or text files. Missing text files
+are recorded in both outputs; they do not stop the scan.
 """
 
 # ---------------------------------------------------------------------------
@@ -82,6 +85,8 @@ ISSUE_REPORT_PATH = (
 ANNOTATION_JSON_SUFFIX = "_GT_moderno.ann.json"
 
 MODERNISED_TXT_SUFFIX = "_GT_moderno.txt"
+
+PRE_MODERNISATION_TXT_SUFFIX = "_GT.txt"
 
 ENTITIES_LEGEND_FILENAME = (
     "entities-legends_Modernizador.json"
@@ -327,10 +332,12 @@ for reviewer_packet in expected_packets:
                     "reviewer_packet": reviewer_packet,
                     "annotation_json_path": pd.NA,
                     "modernised_txt_path": pd.NA,
+                    "pre_modernisation_txt_path": pd.NA,
                     "annotations_legend_path": pd.NA,
                     "entities_legend_path": pd.NA,
                     "annotation_json_found": False,
                     "modernised_txt_found": False,
+                    "pre_modernisation_txt_found": False,
                     "modernised_txt_in_export": False,
                     "annotations_legend_found": False,
                     "entities_legend_found": False,
@@ -426,6 +433,7 @@ for reviewer_packet in expected_packets:
 
     annotation_json_paths = {}
     exported_txt_paths = {}
+    pre_modernisation_txt_paths = {}
 
     for ann_folder in ann_folders:
         for json_path in ann_folder.glob(
@@ -452,6 +460,21 @@ for reviewer_packet in expected_packets:
                 [],
             ).append(txt_path)
 
+    # The pre-modernisation _GT.txt files are supplied in the ordinary packet
+    # directories rather than in ANN_Documents. Build a filename-stem map so
+    # they can be checked against the 20 documents assigned to this packet.
+    for txt_path in packet_dir.rglob(
+        f"*{PRE_MODERNISATION_TXT_SUFFIX}"
+    ):
+        filename_stem = txt_path.name.removesuffix(
+            PRE_MODERNISATION_TXT_SUFFIX
+        )
+
+        pre_modernisation_txt_paths.setdefault(
+            filename_stem,
+            [],
+        ).append(txt_path)
+
     expected_packet_stems = set(
         packet_documents
     )
@@ -466,6 +489,11 @@ for reviewer_packet in expected_packets:
 
     unexpected_txt_stems = (
         set(exported_txt_paths)
+        - expected_packet_stems
+    )
+
+    unexpected_pre_modernisation_stems = (
+        set(pre_modernisation_txt_paths)
         - expected_packet_stems
     )
 
@@ -487,6 +515,16 @@ for reviewer_packet in expected_packets:
             reviewer_packet = reviewer_packet,
             filename_stem = filename_stem,
             issue = "unexpected_exported_txt",
+        )
+
+    for filename_stem in sorted(
+        unexpected_pre_modernisation_stems
+    ):
+        record_issue(
+            issues = issues,
+            reviewer_packet = reviewer_packet,
+            filename_stem = filename_stem,
+            issue = "unexpected_pre_modernisation_txt",
         )
 
     # -----------------------------------------------------------------------
@@ -540,6 +578,22 @@ for reviewer_packet in expected_packets:
         else:
             modernised_txt_path = exported_txt_path
 
+        pre_modernisation_txt_path = select_single_path(
+            paths = pre_modernisation_txt_paths.get(
+                filename_stem,
+                [],
+            ),
+            issues = issues,
+            reviewer_packet = reviewer_packet,
+            filename_stem = filename_stem,
+            issue_if_missing = (
+                "missing_pre_modernisation_txt"
+            ),
+            issue_if_duplicate = (
+                "duplicate_pre_modernisation_txt"
+            ),
+        )
+
         manifest_rows.append(
             {
                 "filename_stem": filename_stem,
@@ -549,6 +603,9 @@ for reviewer_packet in expected_packets:
                 ),
                 "modernised_txt_path": relative_path(
                     modernised_txt_path
+                ),
+                "pre_modernisation_txt_path": relative_path(
+                    pre_modernisation_txt_path
                 ),
                 "annotations_legend_path": relative_path(
                     annotations_legend_path
@@ -561,6 +618,9 @@ for reviewer_packet in expected_packets:
                 ),
                 "modernised_txt_found": (
                     modernised_txt_path is not None
+                ),
+                "pre_modernisation_txt_found": (
+                    pre_modernisation_txt_path is not None
                 ),
                 "modernised_txt_in_export": (
                     exported_txt_path is not None

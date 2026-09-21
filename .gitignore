@@ -8,6 +8,9 @@ __pycache__/
 # Source data - local only
 raw/
 
+# Anything in temp, which is used for testing
+temp/
+
 # Environment variables / secrets
 .env
 .env.*
