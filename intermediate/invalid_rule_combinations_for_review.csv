@@ -1,0 +1,7 @@
+﻿reviewer_packet,filename_stem,annotation_id,annotated_text,start,end,entity_position,error_code,error_category,field_code,field_name,validation_issue,decision,corrected_error_code,corrected_field_code,review_note
+2,BnF_104_2,2582,mi,239,241,2,e_6,Cambios,f_31,Expansión completa,field_code_not_valid_for_error_code,,,,
+2,BnF_104_2,2584,mi,977,979,2,e_6,Cambios,f_31,Expansión completa,field_code_not_valid_for_error_code,,,,
+2,BnF_104_2,3162,mi,1006,1008,2,e_6,Cambios,f_31,Expansión completa,field_code_not_valid_for_error_code,,,,
+9,BnF_266_03,1428,el,1281,1283,1,e_5,Acentuación,f_6663,Sustitución,field_code_not_valid_for_error_code,,,,
+9,BnF_266_03,1431,el,1943,1945,1,e_5,Acentuación,f_6663,Sustitución,field_code_not_valid_for_error_code,,,,
+9,BnF_266_03,1438,el,3077,3079,1,e_5,Acentuación,f_6663,Sustitución,field_code_not_valid_for_error_code,,,,
