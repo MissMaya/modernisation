@@ -1,0 +1,244 @@
+﻿allocation_level,reviewer_packet,reviewer_name,archive,model,sample_documents,documents_with_annotation_data,documents_usable_for_rate_analysis,reviewed_modernised_tokens,median_modernised_tokens,archives_represented,reviewers_represented,models_represented
+model_total,,,,GPT OSS 120B · 8 000 TPM,42,42,42,11652,275.0,24,9,1
+model_total,,,,Llama 3.3 70B · 12 000 TPM,138,138,138,42507,284.5,45,9,1
+reviewer_by_model,1,Javier,,GPT OSS 120B · 8 000 TPM,5,5,5,1229,180.0,5,1,1
+reviewer_by_model,1,Javier,,Llama 3.3 70B · 12 000 TPM,15,15,15,4748,306.0,11,1,1
+reviewer_by_model,2,Paco,,GPT OSS 120B · 8 000 TPM,6,6,6,1706,288.0,6,1,1
+reviewer_by_model,2,Paco,,Llama 3.3 70B · 12 000 TPM,14,14,14,3697,226.5,13,1,1
+reviewer_by_model,3,Adriana,,GPT OSS 120B · 8 000 TPM,3,3,3,431,137.0,3,1,1
+reviewer_by_model,3,Adriana,,Llama 3.3 70B · 12 000 TPM,17,17,17,6630,289.0,15,1,1
+reviewer_by_model,4,Arturo,,GPT OSS 120B · 8 000 TPM,2,2,2,562,281.0,2,1,1
+reviewer_by_model,4,Arturo,,Llama 3.3 70B · 12 000 TPM,18,18,18,4719,235.5,17,1,1
+reviewer_by_model,5,Edna,,GPT OSS 120B · 8 000 TPM,5,5,5,1330,223.0,5,1,1
+reviewer_by_model,5,Edna,,Llama 3.3 70B · 12 000 TPM,15,15,15,4587,288.0,13,1,1
+reviewer_by_model,6,Alba,,GPT OSS 120B · 8 000 TPM,5,5,5,2334,455.0,5,1,1
+reviewer_by_model,6,Alba,,Llama 3.3 70B · 12 000 TPM,15,15,15,4281,282.0,12,1,1
+reviewer_by_model,7,Paloma,,GPT OSS 120B · 8 000 TPM,7,7,7,1840,277.0,7,1,1
+reviewer_by_model,7,Paloma,,Llama 3.3 70B · 12 000 TPM,13,13,13,4288,312.0,13,1,1
+reviewer_by_model,8,Flor,,GPT OSS 120B · 8 000 TPM,4,4,4,591,61.0,4,1,1
+reviewer_by_model,8,Flor,,Llama 3.3 70B · 12 000 TPM,16,16,16,4438,197.5,13,1,1
+reviewer_by_model,9,Rodrigo,,GPT OSS 120B · 8 000 TPM,5,5,5,1629,278.0,5,1,1
+reviewer_by_model,9,Rodrigo,,Llama 3.3 70B · 12 000 TPM,15,15,15,5119,327.0,14,1,1
+archive_by_model,,,agi_contratacion,GPT OSS 120B · 8 000 TPM,2,2,2,317,158.5,1,2,1
+archive_by_model,,,agi_contratacion,Llama 3.3 70B · 12 000 TPM,2,2,2,510,255.0,1,2,1
+archive_by_model,,,agi_guadalajara,GPT OSS 120B · 8 000 TPM,2,2,2,345,172.5,1,2,1
+archive_by_model,,,agi_indiferente,GPT OSS 120B · 8 000 TPM,1,1,1,191,191.0,1,1,1
+archive_by_model,,,agi_indiferente,Llama 3.3 70B · 12 000 TPM,3,3,3,917,327.0,1,2,1
+archive_by_model,,,agi_patronato,GPT OSS 120B · 8 000 TPM,3,3,3,845,293.0,1,3,1
+archive_by_model,,,agi_patronato,Llama 3.3 70B · 12 000 TPM,2,2,2,560,280.0,1,2,1
+archive_by_model,,,agn_ahhacienda,GPT OSS 120B · 8 000 TPM,2,2,2,583,291.5,1,2,1
+archive_by_model,,,agn_ahhacienda,Llama 3.3 70B · 12 000 TPM,2,2,2,426,213.0,1,2,1
+archive_by_model,,,agn_congregaciones,Llama 3.3 70B · 12 000 TPM,1,1,1,374,374.0,1,1,1
+archive_by_model,,,agn_gralparte,GPT OSS 120B · 8 000 TPM,1,1,1,459,459.0,1,1,1
+archive_by_model,,,agn_gralparte,Llama 3.3 70B · 12 000 TPM,3,3,3,822,338.0,1,3,1
+archive_by_model,,,agn_hospjesus,Llama 3.3 70B · 12 000 TPM,4,4,4,1051,296.0,1,4,1
+archive_by_model,,,agn_indiferentevirreinal,GPT OSS 120B · 8 000 TPM,1,1,1,137,137.0,1,1,1
+archive_by_model,,,agn_indiferentevirreinal,Llama 3.3 70B · 12 000 TPM,2,2,2,404,202.0,1,2,1
+archive_by_model,,,agn_indios,GPT OSS 120B · 8 000 TPM,3,3,3,1245,414.0,1,3,1
+archive_by_model,,,agn_indios,Llama 3.3 70B · 12 000 TPM,1,1,1,252,252.0,1,1,1
+archive_by_model,,,agn_inquisicion,GPT OSS 120B · 8 000 TPM,1,1,1,10,10.0,1,1,1
+archive_by_model,,,agn_inquisicion,Llama 3.3 70B · 12 000 TPM,4,4,4,634,168.0,1,4,1
+archive_by_model,,,agn_marina,GPT OSS 120B · 8 000 TPM,3,3,3,267,87.0,1,3,1
+archive_by_model,,,agn_marina,Llama 3.3 70B · 12 000 TPM,2,2,2,153,76.5,1,2,1
+archive_by_model,,,agn_mercedes,GPT OSS 120B · 8 000 TPM,1,1,1,455,455.0,1,1,1
+archive_by_model,,,agn_realesceddup,GPT OSS 120B · 8 000 TPM,2,2,2,906,453.0,1,2,1
+archive_by_model,,,agn_realesceddup,Llama 3.3 70B · 12 000 TPM,2,2,2,654,327.0,1,1,1
+archive_by_model,,,agn_tierras,GPT OSS 120B · 8 000 TPM,1,1,1,177,177.0,1,1,1
+archive_by_model,,,agn_tierras,Llama 3.3 70B · 12 000 TPM,2,2,2,306,153.0,1,2,1
+archive_by_model,,,ags_ce,GPT OSS 120B · 8 000 TPM,1,1,1,83,83.0,1,1,1
+archive_by_model,,,ags_ce,Llama 3.3 70B · 12 000 TPM,3,3,3,560,189.0,1,3,1
+archive_by_model,,,amp_ac,GPT OSS 120B · 8 000 TPM,1,1,1,188,188.0,1,1,1
+archive_by_model,,,amp_ac,Llama 3.3 70B · 12 000 TPM,1,1,1,112,112.0,1,1,1
+archive_by_model,,,bne_ms3047,GPT OSS 120B · 8 000 TPM,2,2,2,998,499.0,1,2,1
+archive_by_model,,,bne_ms3047,Llama 3.3 70B · 12 000 TPM,1,1,1,462,462.0,1,1,1
+archive_by_model,,,bnf_030,GPT OSS 120B · 8 000 TPM,3,3,3,802,278.0,1,3,1
+archive_by_model,,,bnf_030,Llama 3.3 70B · 12 000 TPM,1,1,1,383,383.0,1,1,1
+archive_by_model,,,bnf_032,GPT OSS 120B · 8 000 TPM,2,2,2,315,157.5,1,2,1
+archive_by_model,,,bnf_032,Llama 3.3 70B · 12 000 TPM,3,3,3,1244,354.0,1,3,1
+archive_by_model,,,bnf_075,GPT OSS 120B · 8 000 TPM,1,1,1,383,383.0,1,1,1
+archive_by_model,,,bnf_075,Llama 3.3 70B · 12 000 TPM,3,3,3,710,219.0,1,2,1
+archive_by_model,,,bnf_104,GPT OSS 120B · 8 000 TPM,1,1,1,328,328.0,1,1,1
+archive_by_model,,,bnf_104,Llama 3.3 70B · 12 000 TPM,1,1,1,245,245.0,1,1,1
+archive_by_model,,,bnf_110,Llama 3.3 70B · 12 000 TPM,4,4,4,889,210.0,1,3,1
+archive_by_model,,,bnf_111,GPT OSS 120B · 8 000 TPM,1,1,1,459,459.0,1,1,1
+archive_by_model,,,bnf_111,Llama 3.3 70B · 12 000 TPM,3,3,3,1633,569.0,1,3,1
+archive_by_model,,,bnf_112,GPT OSS 120B · 8 000 TPM,4,4,4,1226,283.5,1,4,1
+archive_by_model,,,bnf_112,Llama 3.3 70B · 12 000 TPM,1,1,1,309,309.0,1,1,1
+archive_by_model,,,bnf_113,GPT OSS 120B · 8 000 TPM,2,2,2,660,330.0,1,2,1
+archive_by_model,,,bnf_113,Llama 3.3 70B · 12 000 TPM,2,2,2,774,387.0,1,2,1
+archive_by_model,,,bnf_116,GPT OSS 120B · 8 000 TPM,1,1,1,273,273.0,1,1,1
+archive_by_model,,,bnf_116,Llama 3.3 70B · 12 000 TPM,3,3,3,393,133.0,1,2,1
+archive_by_model,,,bnf_117,Llama 3.3 70B · 12 000 TPM,5,5,5,1178,273.0,1,5,1
+archive_by_model,,,bnf_118,Llama 3.3 70B · 12 000 TPM,5,5,5,1137,268.0,1,5,1
+archive_by_model,,,bnf_119-148,Llama 3.3 70B · 12 000 TPM,5,5,5,1502,279.0,1,5,1
+archive_by_model,,,bnf_167,Llama 3.3 70B · 12 000 TPM,5,5,5,2009,437.0,1,4,1
+archive_by_model,,,bnf_174,Llama 3.3 70B · 12 000 TPM,5,5,5,2947,641.0,1,4,1
+archive_by_model,,,bnf_243,Llama 3.3 70B · 12 000 TPM,4,4,4,1350,408.5,1,4,1
+archive_by_model,,,bnf_244,Llama 3.3 70B · 12 000 TPM,4,4,4,1000,281.5,1,3,1
+archive_by_model,,,bnf_264,Llama 3.3 70B · 12 000 TPM,3,3,3,2219,819.0,1,3,1
+archive_by_model,,,bnf_266,Llama 3.3 70B · 12 000 TPM,5,5,5,4195,822.0,1,4,1
+archive_by_model,,,bnf_267,Llama 3.3 70B · 12 000 TPM,3,3,3,685,227.0,1,2,1
+archive_by_model,,,bnf_283,Llama 3.3 70B · 12 000 TPM,3,3,3,1577,553.0,1,3,1
+archive_by_model,,,bnf_394,Llama 3.3 70B · 12 000 TPM,3,3,3,944,413.0,1,2,1
+archive_by_model,,,bp_cm,Llama 3.3 70B · 12 000 TPM,5,5,5,1180,301.0,1,4,1
+archive_by_model,,,loc_hpkraus,Llama 3.3 70B · 12 000 TPM,3,3,3,675,232.0,1,3,1
+archive_by_model,,,mechoacan_yurirapundaro,Llama 3.3 70B · 12 000 TPM,2,2,2,375,187.5,1,2,1
+archive_by_model,,,uia_ms149,Llama 3.3 70B · 12 000 TPM,5,5,5,1551,296.0,1,4,1
+archive_by_model,,,utblac_eog,Llama 3.3 70B · 12 000 TPM,4,4,4,429,111.5,1,3,1
+archive_by_model,,,utblac_gg,Llama 3.3 70B · 12 000 TPM,4,4,4,726,179.5,1,3,1
+archive_by_model,,,utblac_jgi,Llama 3.3 70B · 12 000 TPM,4,4,4,814,222.0,1,3,1
+archive_by_model,,,utblac_wbs,Llama 3.3 70B · 12 000 TPM,5,5,5,1237,288.0,1,4,1
+reviewer_by_archive,1,Javier,agi_contratacion,,1,1,1,180,180.0,1,1,1
+reviewer_by_archive,1,Javier,agi_patronato,,1,1,1,248,248.0,1,1,1
+reviewer_by_archive,1,Javier,agn_ahhacienda,,1,1,1,411,411.0,1,1,1
+reviewer_by_archive,1,Javier,agn_congregaciones,,1,1,1,374,374.0,1,1,1
+reviewer_by_archive,1,Javier,agn_indiferentevirreinal,,1,1,1,128,128.0,1,1,1
+reviewer_by_archive,1,Javier,agn_inquisicion,,1,1,1,223,223.0,1,1,1
+reviewer_by_archive,1,Javier,agn_marina,,1,1,1,70,70.0,1,1,1
+reviewer_by_archive,1,Javier,ags_ce,,1,1,1,83,83.0,1,1,1
+reviewer_by_archive,1,Javier,bne_ms3047,,2,2,2,947,473.5,1,1,2
+reviewer_by_archive,1,Javier,bnf_167,,2,2,2,898,449.0,1,1,1
+reviewer_by_archive,1,Javier,bnf_174,,2,2,2,947,473.5,1,1,1
+reviewer_by_archive,1,Javier,bnf_283,,1,1,1,553,553.0,1,1,1
+reviewer_by_archive,1,Javier,bp_cm,,2,2,2,413,206.5,1,1,1
+reviewer_by_archive,1,Javier,uia_ms149,,1,1,1,296,296.0,1,1,1
+reviewer_by_archive,1,Javier,utblac_eog,,2,2,2,206,103.0,1,1,1
+reviewer_by_archive,2,Paco,agi_contratacion,,1,1,1,304,304.0,1,1,1
+reviewer_by_archive,2,Paco,agi_patronato,,1,1,1,223,223.0,1,1,1
+reviewer_by_archive,2,Paco,agn_hospjesus,,1,1,1,317,317.0,1,1,1
+reviewer_by_archive,2,Paco,agn_marina,,1,1,1,31,31.0,1,1,1
+reviewer_by_archive,2,Paco,agn_tierras,,1,1,1,122,122.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_030,,1,1,1,383,383.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_032,,1,1,1,303,303.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_104,,1,1,1,328,328.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_112,,1,1,1,269,269.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_113,,1,1,1,310,310.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_116,,1,1,1,273,273.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_117,,1,1,1,148,148.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_167,,1,1,1,389,389.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_266,,1,1,1,923,923.0,1,1,1
+reviewer_by_archive,2,Paco,bnf_267,,2,2,2,453,226.5,1,1,1
+reviewer_by_archive,2,Paco,loc_hpkraus,,1,1,1,148,148.0,1,1,1
+reviewer_by_archive,2,Paco,uia_ms149,,1,1,1,297,297.0,1,1,1
+reviewer_by_archive,2,Paco,utblac_gg,,1,1,1,152,152.0,1,1,1
+reviewer_by_archive,2,Paco,utblac_wbs,,1,1,1,30,30.0,1,1,1
+reviewer_by_archive,3,Adriana,agi_contratacion,,1,1,1,137,137.0,1,1,1
+reviewer_by_archive,3,Adriana,agi_guadalajara,,1,1,1,122,122.0,1,1,1
+reviewer_by_archive,3,Adriana,agn_ahhacienda,,1,1,1,172,172.0,1,1,1
+reviewer_by_archive,3,Adriana,agn_inquisicion,,1,1,1,113,113.0,1,1,1
+reviewer_by_archive,3,Adriana,agn_marina,,1,1,1,122,122.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_032,,1,1,1,354,354.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_075,,1,1,1,289,289.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_110,,1,1,1,289,289.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_116,,2,2,2,260,130.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_119-148,,1,1,1,284,284.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_167,,1,1,1,285,285.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_174,,1,1,1,663,663.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_243,,1,1,1,456,456.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_264,,1,1,1,955,955.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_266,,2,2,2,1706,853.0,1,1,1
+reviewer_by_archive,3,Adriana,bnf_267,,1,1,1,232,232.0,1,1,1
+reviewer_by_archive,3,Adriana,bp_cm,,1,1,1,301,301.0,1,1,1
+reviewer_by_archive,3,Adriana,mechoacan_yurirapundaro,,1,1,1,321,321.0,1,1,1
+reviewer_by_archive,4,Arturo,agn_ahhacienda,,1,1,1,181,181.0,1,1,1
+reviewer_by_archive,4,Arturo,agn_hospjesus,,1,1,1,285,285.0,1,1,1
+reviewer_by_archive,4,Arturo,agn_indios,,2,2,2,524,262.0,1,1,2
+reviewer_by_archive,4,Arturo,ags_ce,,1,1,1,190,190.0,1,1,1
+reviewer_by_archive,4,Arturo,bnf_032,,1,1,1,648,648.0,1,1,1
+reviewer_by_archive,4,Arturo,bnf_075,,2,2,2,421,210.5,1,1,1
+reviewer_by_archive,4,Arturo,bnf_112,,1,1,1,290,290.0,1,1,1
+reviewer_by_archive,4,Arturo,bnf_117,,1,1,1,287,287.0,1,1,1
+reviewer_by_archive,4,Arturo,bnf_118,,1,1,1,268,268.0,1,1,1
+reviewer_by_archive,4,Arturo,bnf_119-148,,1,1,1,158,158.0,1,1,1
+reviewer_by_archive,4,Arturo,bnf_174,,1,1,1,701,701.0,1,1,1
+reviewer_by_archive,4,Arturo,bnf_243,,1,1,1,77,77.0,1,1,1
+reviewer_by_archive,4,Arturo,bnf_244,,1,1,1,283,283.0,1,1,1
+reviewer_by_archive,4,Arturo,bp_cm,,1,1,1,108,108.0,1,1,1
+reviewer_by_archive,4,Arturo,mechoacan_yurirapundaro,,1,1,1,54,54.0,1,1,1
+reviewer_by_archive,4,Arturo,uia_ms149,,1,1,1,391,391.0,1,1,1
+reviewer_by_archive,4,Arturo,utblac_eog,,1,1,1,57,57.0,1,1,1
+reviewer_by_archive,4,Arturo,utblac_wbs,,1,1,1,358,358.0,1,1,1
+reviewer_by_archive,5,Edna,agi_guadalajara,,1,1,1,223,223.0,1,1,1
+reviewer_by_archive,5,Edna,agn_gralparte,,1,1,1,38,38.0,1,1,1
+reviewer_by_archive,5,Edna,agn_marina,,1,1,1,87,87.0,1,1,1
+reviewer_by_archive,5,Edna,agn_tierras,,1,1,1,177,177.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_030,,1,1,1,453,453.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_112,,1,1,1,390,390.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_116,,1,1,1,133,133.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_117,,1,1,1,273,273.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_118,,1,1,1,279,279.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_119-148,,1,1,1,279,279.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_167,,1,1,1,437,437.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_243,,1,1,1,400,400.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_244,,2,2,2,571,285.5,1,1,1
+reviewer_by_archive,5,Edna,bnf_264,,1,1,1,819,819.0,1,1,1
+reviewer_by_archive,5,Edna,bnf_283,,1,1,1,460,460.0,1,1,1
+reviewer_by_archive,5,Edna,loc_hpkraus,,1,1,1,295,295.0,1,1,1
+reviewer_by_archive,5,Edna,utblac_jgi,,1,1,1,298,298.0,1,1,1
+reviewer_by_archive,5,Edna,utblac_wbs,,2,2,2,305,152.5,1,1,1
+reviewer_by_archive,6,Alba,agi_indiferente,,1,1,1,169,169.0,1,1,1
+reviewer_by_archive,6,Alba,agi_patronato,,1,1,1,293,293.0,1,1,1
+reviewer_by_archive,6,Alba,agn_indios,,1,1,1,559,559.0,1,1,1
+reviewer_by_archive,6,Alba,agn_mercedes,,1,1,1,455,455.0,1,1,1
+reviewer_by_archive,6,Alba,agn_realesceddup,,3,3,3,1298,338.0,1,1,2
+reviewer_by_archive,6,Alba,amp_ac,,1,1,1,112,112.0,1,1,1
+reviewer_by_archive,6,Alba,bnf_075,,1,1,1,383,383.0,1,1,1
+reviewer_by_archive,6,Alba,bnf_104,,1,1,1,245,245.0,1,1,1
+reviewer_by_archive,6,Alba,bnf_110,,2,2,2,500,250.0,1,1,1
+reviewer_by_archive,6,Alba,bnf_111,,1,1,1,570,570.0,1,1,1
+reviewer_by_archive,6,Alba,bnf_117,,1,1,1,334,334.0,1,1,1
+reviewer_by_archive,6,Alba,bnf_118,,1,1,1,245,245.0,1,1,1
+reviewer_by_archive,6,Alba,bnf_244,,1,1,1,146,146.0,1,1,1
+reviewer_by_archive,6,Alba,bnf_283,,1,1,1,564,564.0,1,1,1
+reviewer_by_archive,6,Alba,uia_ms149,,2,2,2,567,283.5,1,1,1
+reviewer_by_archive,6,Alba,utblac_gg,,1,1,1,175,175.0,1,1,1
+reviewer_by_archive,7,Paloma,agi_patronato,,2,2,2,641,320.5,1,1,2
+reviewer_by_archive,7,Paloma,agn_ahhacienda,,1,1,1,245,245.0,1,1,1
+reviewer_by_archive,7,Paloma,agn_gralparte,,1,1,1,338,338.0,1,1,1
+reviewer_by_archive,7,Paloma,agn_indiferentevirreinal,,1,1,1,137,137.0,1,1,1
+reviewer_by_archive,7,Paloma,agn_indios,,1,1,1,414,414.0,1,1,1
+reviewer_by_archive,7,Paloma,agn_inquisicion,,1,1,1,40,40.0,1,1,1
+reviewer_by_archive,7,Paloma,agn_realesceddup,,1,1,1,262,262.0,1,1,1
+reviewer_by_archive,7,Paloma,bnf_030,,1,1,1,71,71.0,1,1,1
+reviewer_by_archive,7,Paloma,bnf_032,,1,1,1,242,242.0,1,1,1
+reviewer_by_archive,7,Paloma,bnf_110,,1,1,1,100,100.0,1,1,1
+reviewer_by_archive,7,Paloma,bnf_111,,1,1,1,569,569.0,1,1,1
+reviewer_by_archive,7,Paloma,bnf_112,,2,2,2,586,293.0,1,1,2
+reviewer_by_archive,7,Paloma,bnf_113,,2,2,2,526,263.0,1,1,2
+reviewer_by_archive,7,Paloma,bnf_118,,1,1,1,318,318.0,1,1,1
+reviewer_by_archive,7,Paloma,bnf_119-148,,1,1,1,558,558.0,1,1,1
+reviewer_by_archive,7,Paloma,bnf_174,,1,1,1,636,636.0,1,1,1
+reviewer_by_archive,7,Paloma,bnf_264,,1,1,1,445,445.0,1,1,1
+reviewer_by_archive,8,Flor,agi_contratacion,,1,1,1,206,206.0,1,1,1
+reviewer_by_archive,8,Flor,agn_hospjesus,,1,1,1,142,142.0,1,1,1
+reviewer_by_archive,8,Flor,agn_inquisicion,,1,1,1,10,10.0,1,1,1
+reviewer_by_archive,8,Flor,agn_marina,,1,1,1,110,110.0,1,1,1
+reviewer_by_archive,8,Flor,agn_tierras,,1,1,1,184,184.0,1,1,1
+reviewer_by_archive,8,Flor,ags_ce,,1,1,1,189,189.0,1,1,1
+reviewer_by_archive,8,Flor,bnf_032,,1,1,1,12,12.0,1,1,1
+reviewer_by_archive,8,Flor,bnf_111,,2,2,2,953,476.5,1,1,2
+reviewer_by_archive,8,Flor,bnf_113,,1,1,1,598,598.0,1,1,1
+reviewer_by_archive,8,Flor,bnf_117,,1,1,1,136,136.0,1,1,1
+reviewer_by_archive,8,Flor,bnf_119-148,,1,1,1,223,223.0,1,1,1
+reviewer_by_archive,8,Flor,bnf_266,,1,1,1,800,800.0,1,1,1
+reviewer_by_archive,8,Flor,bnf_394,,2,2,2,531,265.5,1,1,1
+reviewer_by_archive,8,Flor,utblac_eog,,1,1,1,166,166.0,1,1,1
+reviewer_by_archive,8,Flor,utblac_gg,,2,2,2,399,199.5,1,1,1
+reviewer_by_archive,8,Flor,utblac_jgi,,2,2,2,370,185.0,1,1,1
+reviewer_by_archive,9,Rodrigo,agi_indiferente,,3,3,3,939,327.0,1,1,2
+reviewer_by_archive,9,Rodrigo,agn_gralparte,,2,2,2,905,452.5,1,1,2
+reviewer_by_archive,9,Rodrigo,agn_hospjesus,,1,1,1,307,307.0,1,1,1
+reviewer_by_archive,9,Rodrigo,agn_indiferentevirreinal,,1,1,1,276,276.0,1,1,1
+reviewer_by_archive,9,Rodrigo,agn_inquisicion,,1,1,1,258,258.0,1,1,1
+reviewer_by_archive,9,Rodrigo,ags_ce,,1,1,1,181,181.0,1,1,1
+reviewer_by_archive,9,Rodrigo,amp_ac,,1,1,1,188,188.0,1,1,1
+reviewer_by_archive,9,Rodrigo,bne_ms3047,,1,1,1,513,513.0,1,1,1
+reviewer_by_archive,9,Rodrigo,bnf_030,,1,1,1,278,278.0,1,1,1
+reviewer_by_archive,9,Rodrigo,bnf_118,,1,1,1,27,27.0,1,1,1
+reviewer_by_archive,9,Rodrigo,bnf_243,,1,1,1,417,417.0,1,1,1
+reviewer_by_archive,9,Rodrigo,bnf_266,,1,1,1,766,766.0,1,1,1
+reviewer_by_archive,9,Rodrigo,bnf_394,,1,1,1,413,413.0,1,1,1
+reviewer_by_archive,9,Rodrigo,bp_cm,,1,1,1,358,358.0,1,1,1
+reviewer_by_archive,9,Rodrigo,loc_hpkraus,,1,1,1,232,232.0,1,1,1
+reviewer_by_archive,9,Rodrigo,utblac_jgi,,1,1,1,146,146.0,1,1,1
+reviewer_by_archive,9,Rodrigo,utblac_wbs,,1,1,1,544,544.0,1,1,1

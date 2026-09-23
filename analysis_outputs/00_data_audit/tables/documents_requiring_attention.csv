@@ -1,0 +1,3 @@
+﻿filename_stem,archive,reviewer_packet,reviewer_name,model,review_data_status,annotation_json_found,modernised_text_available,pre_modernisation_text_available,n_excluded_assignments
+BnF_104_2,bnf_104,2,Paco,GPT OSS 120B · 8 000 TPM,reviewed_with_annotations,True,True,True,3
+BnF_266_03,bnf_266,9,Rodrigo,Llama 3.3 70B · 12 000 TPM,reviewed_with_annotations,True,True,True,3

@@ -1,0 +1,15 @@
+﻿measure,value
+sample_documents,180
+distinct_archives,47
+reviewer_packets,9
+reviewers,9
+models,2
+documents_with_annotation_data,180
+documents_without_annotation_data,0
+documents_usable_for_rate_analysis,180
+reviewed_documents_with_no_annotations,3
+modernised_texts_available,180
+pre_modernisation_texts_available,180
+recorded_assignment_rows,5231
+included_assignment_rows,5225
+excluded_assignment_rows,6

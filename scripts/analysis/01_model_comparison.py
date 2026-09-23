@@ -1,7 +1,8 @@
 """Compare the two modernisation models using human-review annotations.
 
-This section answers one central question: did reviewers identify fewer errors
-in documents modernised by one model than in documents modernised by the other?
+This section describes how frequently reviewers marked apparent problems in
+documents modernised by each model. It does not attempt to prove that the model
+itself caused the observed difference.
 
 The primary measure is the number of distinct included annotations per 1,000
 modernised tokens. A single annotation may have more than one category or
@@ -14,10 +15,12 @@ is not interpreted as a document with zero errors.
 The script deliberately produces a small set of outputs:
 
     analysis_outputs/01_model_comparison/MODEL_COMPARISON_README.md
-    analysis_outputs/01_model_comparison/tables/model_performance_summary.csv
+    analysis_outputs/01_model_comparison/tables/model_observed_summary.csv
     analysis_outputs/01_model_comparison/figures/en/
         annotation_rate_by_model.png and .svg
-        zero_annotation_documents_by_model.png and .svg
+
+Statistical adjustment for archive and reviewer is deliberately postponed
+until the annotation patterns and possible reviewer effects have been examined.
 """
 
 import os
@@ -65,7 +68,7 @@ SECTION_README_PATH = SECTION_OUTPUT_DIR / "MODEL_COMPARISON_README.md"
 CHART_TEXT = {
     "en": {
         "annotation_rate": {
-            "title": "Which model received fewer reviewer annotations?",
+            "title": "How did observed annotation rates differ by model?",
             "description": (
                 "This comparison shows the variation in reviewer-marked "
                 "errors across documents modernised by each model."
@@ -76,28 +79,16 @@ CHART_TEXT = {
             ),
             "y_label": "Annotations per 1,000 tokens",
         },
-        "zero_annotations": {
-            "title": "How often did reviewers record no errors?",
-            "description": (
-                "This comparison shows the share of reviewed documents in "
-                "which no annotations were recorded."
-            ),
-            "measure": (
-                "Percentage of reviewed documents with zero included "
-                "annotations."
-            ),
-            "y_label": "Reviewed documents with no annotations (%)",
-        },
     }
 }
 
 
-README_TEXT = """# 01 · Model comparison
+README_TEXT = """# 01 · Descriptive model overview
 
 ## What this section is trying to show
 
-This section compares the number of errors identified by human reviewers in
-documents modernised by the two models.
+This section shows what reviewers recorded for documents produced by each
+modernisation model.
 
 The main measure is **distinct included annotations per 1,000 modernised
 tokens**. Each reviewer-marked annotation is counted once even when it has more
@@ -112,22 +103,22 @@ they are not treated as documents with zero errors.
 
 ## Table produced by this script
 
-- `model_performance_summary.csv`: reviewed documents, text length, annotation
+- `model_observed_summary.csv`: reviewed documents, text length, annotation
   totals, annotation rates and zero-annotation documents for each model.
 
 ## Figures produced by this script
 
 - `annotation_rate_by_model`: document-level annotation rates for each model.
-- `zero_annotation_documents_by_model`: percentage of reviewed documents with
-  no included annotations.
 
 Each figure is saved as both PNG and SVG.
 
 ## Interpretation
 
-These are descriptive comparisons. They do not yet adjust for archive,
-reviewer or other document-level differences, and they do not constitute the
-final statistical model comparison.
+This is a descriptive comparison of human-review outcomes. A higher annotation
+rate means that reviewers marked more apparent problems; it does not yet prove
+that the model was worse. Later analysis will examine error types, reviewer
+behaviour, archive composition and annotation decisions before statistical
+modelling is undertaken.
 """
 
 
@@ -263,12 +254,12 @@ for model, model_df in analysis_df.groupby("model", sort=True):
 model_summary_df = pd.DataFrame(summary_rows)
 save_table(
     model_summary_df,
-    tables_directory / "model_performance_summary.csv",
+    tables_directory / "model_observed_summary.csv",
 )
 
 
 # ---------------------------------------------------------------------------
-# Generate two focused model-comparison figures
+# Generate one focused descriptive figure
 # ---------------------------------------------------------------------------
 
 apply_plot_style()
@@ -292,13 +283,17 @@ for language in OUTPUT_LANGUAGES:
         ].dropna()
         for model in models
     ]
+    axis_labels = [
+        f"{fill(model, 24)}\n(n={len(rates)} documents)"
+        for model, rates in zip(models, rate_groups)
+    ]
 
     fig, ax = plt.subplots(figsize=(10, 7.4))
-    fig.subplots_adjust(top=0.72, bottom=0.22, left=0.14, right=0.92)
+    fig.subplots_adjust(top=0.72, bottom=0.26, left=0.14, right=0.92)
 
     boxplot = ax.boxplot(
         rate_groups,
-        tick_labels=[fill(model, 22) for model in models],
+        tick_labels=axis_labels,
         patch_artist=True,
         widths=0.50,
         showfliers=False,
@@ -332,6 +327,7 @@ for language in OUTPUT_LANGUAGES:
     ax.grid(axis="y")
     ax.set_axisbelow(True)
     ax.spines[["top", "right"]].set_visible(False)
+    ax.tick_params(axis="x", labelrotation=0)
     add_chart_header(
         fig,
         **{
@@ -341,51 +337,9 @@ for language in OUTPUT_LANGUAGES:
     )
     add_figure_note(
         fig,
-        "Each point represents one document. Documents with unavailable annotation data are omitted.",
+        "Each point represents one document. Rates are not adjusted for archive or reviewer.",
     )
     save_figure(fig, language_directory, "annotation_rate_by_model")
-
-    # Figure 2: percentage of reviewed documents with zero annotations.
-    zero_summary = model_summary_df.set_index("model").reindex(models)
-    zero_percentages = zero_summary["documents_with_zero_annotations_pct"]
-
-    fig, ax = plt.subplots(figsize=(10, 7.0))
-    fig.subplots_adjust(top=0.72, bottom=0.22, left=0.16, right=0.92)
-    bars = ax.bar(
-        [fill(model, 22) for model in models],
-        zero_percentages,
-        color=[model_colours[model] for model in models],
-        width=0.55,
-    )
-    ax.set_ylabel(text["zero_annotations"]["y_label"])
-    ax.set_ylim(0, max(float(zero_percentages.max()) * 1.25, 10))
-    ax.grid(axis="y")
-    ax.set_axisbelow(True)
-    ax.spines[["top", "right"]].set_visible(False)
-    ax.bar_label(
-        bars,
-        labels=[f"{value:.1f}%" for value in zero_percentages],
-        padding=5,
-        fontsize=10,
-        fontweight="bold",
-    )
-    add_chart_header(
-        fig,
-        **{
-            key: text["zero_annotations"][key]
-            for key in ("title", "description", "measure")
-        },
-    )
-    add_figure_note(
-        fig,
-        "Only documents with available annotation data and a positive modernised token count are included.",
-    )
-    save_figure(
-        fig,
-        language_directory,
-        "zero_annotation_documents_by_model",
-    )
-
 
 # ---------------------------------------------------------------------------
 # Print a brief completion report
@@ -394,6 +348,5 @@ for language in OUTPUT_LANGUAGES:
 print(f"\nDocuments included in model comparison: {len(analysis_df)}")
 print(f"Documents omitted because review data or token counts were unavailable: {len(documents_df) - len(analysis_df)}")
 print(f"\nSummary table saved to: {tables_directory}")
-print(f"Figures saved to: {figures_directory}")
+print(f"Figure saved to: {figures_directory}")
 print(f"README saved to: {SECTION_README_PATH}")
-

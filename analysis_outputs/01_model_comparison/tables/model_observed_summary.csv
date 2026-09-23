@@ -1,0 +1,3 @@
+﻿model,sample_documents,documents_in_comparison,modernised_tokens,included_annotations,included_assignments,pooled_annotations_per_1000_tokens,median_document_annotation_rate,mean_document_annotation_rate,first_quartile_document_annotation_rate,third_quartile_document_annotation_rate,documents_with_zero_annotations,documents_with_zero_annotations_pct
+GPT OSS 120B · 8 000 TPM,42,42,11652,1995,2271,171.21524201853757,155.88444580404467,169.03078765179157,114.580265095729,216.5591580376846,0,0.0
+Llama 3.3 70B · 12 000 TPM,138,138,42507,2622,2954,61.6839579363399,55.94746384220069,67.15572592531343,28.376685002441697,94.09845205299752,3,2.1739130434782608

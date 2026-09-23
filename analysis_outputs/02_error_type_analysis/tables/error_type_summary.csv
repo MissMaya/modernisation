@@ -1,0 +1,99 @@
+﻿summary_level,error_category,subrule,model,count,rate_per_1000_tokens,count_definition
+category_overall,Abreviaturas,All sub-rules,All models,1625,30.004246754925312,distinct_document_annotation_pairs_within_category
+category_overall,Acentuación,All sub-rules,All models,305,5.6315663140013665,distinct_document_annotation_pairs_within_category
+category_overall,Cambios,All sub-rules,All models,1919,35.43270739858564,distinct_document_annotation_pairs_within_category
+category_overall,Filológicas - instrucciones,All sub-rules,All models,489,9.028970254251371,distinct_document_annotation_pairs_within_category
+category_overall,Filológicas - mecánicas,All sub-rules,All models,153,2.8250152329252756,distinct_document_annotation_pairs_within_category
+category_overall,Puntuación,All sub-rules,All models,492,9.084362709798924,distinct_document_annotation_pairs_within_category
+category_by_model,Abreviaturas,All sub-rules,GPT OSS 120B · 8 000 TPM,878,75.35187092344661,distinct_document_annotation_pairs_within_category
+category_by_model,Abreviaturas,All sub-rules,Llama 3.3 70B · 12 000 TPM,747,17.573576116874868,distinct_document_annotation_pairs_within_category
+category_by_model,Acentuación,All sub-rules,GPT OSS 120B · 8 000 TPM,211,18.1084792310333,distinct_document_annotation_pairs_within_category
+category_by_model,Acentuación,All sub-rules,Llama 3.3 70B · 12 000 TPM,94,2.211400475215847,distinct_document_annotation_pairs_within_category
+category_by_model,Cambios,All sub-rules,GPT OSS 120B · 8 000 TPM,558,47.88877445932029,distinct_document_annotation_pairs_within_category
+category_by_model,Cambios,All sub-rules,Llama 3.3 70B · 12 000 TPM,1361,32.01825581668902,distinct_document_annotation_pairs_within_category
+category_by_model,Filológicas - instrucciones,All sub-rules,GPT OSS 120B · 8 000 TPM,302,25.91829728801922,distinct_document_annotation_pairs_within_category
+category_by_model,Filológicas - instrucciones,All sub-rules,Llama 3.3 70B · 12 000 TPM,187,4.399275413461313,distinct_document_annotation_pairs_within_category
+category_by_model,Filológicas - mecánicas,All sub-rules,GPT OSS 120B · 8 000 TPM,117,10.04119464469619,distinct_document_annotation_pairs_within_category
+category_by_model,Filológicas - mecánicas,All sub-rules,Llama 3.3 70B · 12 000 TPM,36,0.8469193309337286,distinct_document_annotation_pairs_within_category
+category_by_model,Puntuación,All sub-rules,GPT OSS 120B · 8 000 TPM,153,13.130792996910403,distinct_document_annotation_pairs_within_category
+category_by_model,Puntuación,All sub-rules,Llama 3.3 70B · 12 000 TPM,339,7.975157032959277,distinct_document_annotation_pairs_within_category
+subrule_overall,Abreviaturas,"Excepciones (desto/a/os, dello/a/os)",All models,112,2.0679850071086987,included_category_field_assignments
+subrule_overall,Abreviaturas,Expansión completa,All models,1239,22.877084141139978,included_category_field_assignments
+subrule_overall,Abreviaturas,No sub-rule assigned,All models,276,5.096105910375007,included_category_field_assignments
+subrule_overall,Acentuación,No sub-rule assigned,All models,305,5.6315663140013665,included_category_field_assignments
+subrule_overall,Cambios,Deleción,All models,421,7.773407928506804,included_category_field_assignments
+subrule_overall,Cambios,Inserción,All models,324,5.982385199135877,included_category_field_assignments
+subrule_overall,Cambios,No sub-rule assigned,All models,105,1.938735944164405,included_category_field_assignments
+subrule_overall,Cambios,Otros,All models,275,5.077641758525822,included_category_field_assignments
+subrule_overall,Cambios,Sustitución,All models,1006,18.574936760279915,included_category_field_assignments
+subrule_overall,Filológicas - instrucciones,No modificar otros idiomas,All models,38,0.7016377702690226,included_category_field_assignments
+subrule_overall,Filológicas - instrucciones,No sub-rule assigned,All models,33,0.6093170110230987,included_category_field_assignments
+subrule_overall,Filológicas - instrucciones,Regularización de H etimológica,All models,98,1.809486881220111,included_category_field_assignments
+subrule_overall,Filológicas - instrucciones,Regularización de i/y vocálicas,All models,144,2.6588378662826124,included_category_field_assignments
+subrule_overall,Filológicas - instrucciones,Regularización de la nasal palatal,All models,12,0.2215698221902177,included_category_field_assignments
+subrule_overall,Filológicas - instrucciones,Regularización de labiales (b/v),All models,139,2.5665171070366886,included_category_field_assignments
+subrule_overall,Filológicas - instrucciones,x sibilante → j,All models,50,0.9232075924592404,included_category_field_assignments
+subrule_overall,Filológicas - mecánicas,Adecuación de grafía labiovelar,All models,4,0.07385660739673923,included_category_field_assignments
+subrule_overall,Filológicas - mecánicas,E protética,All models,3,0.055392455547554426,included_category_field_assignments
+subrule_overall,Filológicas - mecánicas,No sub-rule assigned,All models,11,0.20310567034103288,included_category_field_assignments
+subrule_overall,Filológicas - mecánicas,Regularización de la diéresis,All models,5,0.09232075924592403,included_category_field_assignments
+subrule_overall,Filológicas - mecánicas,Regularización de nasales ante labial,All models,6,0.11078491109510885,included_category_field_assignments
+subrule_overall,Filológicas - mecánicas,Regularización de sibilantes,All models,104,1.92027179231522,included_category_field_assignments
+subrule_overall,Filológicas - mecánicas,Regularización de vibrantes,All models,7,0.12924906294429367,included_category_field_assignments
+subrule_overall,Filológicas - mecánicas,Simplificación de grupos consonánticos,All models,12,0.2215698221902177,included_category_field_assignments
+subrule_overall,Filológicas - mecánicas,Simplificación de grupos vocálicos,All models,2,0.036928303698369615,included_category_field_assignments
+subrule_overall,Puntuación,"Coma (,)",All models,293,5.409996491811149,included_category_field_assignments
+subrule_overall,Puntuación,No sub-rule assigned,All models,81,1.4955962997839694,included_category_field_assignments
+subrule_overall,Puntuación,Punto (.),All models,120,2.2156982219021772,included_category_field_assignments
+subrule_by_model,Abreviaturas,"Excepciones (desto/a/os, dello/a/os)",GPT OSS 120B · 8 000 TPM,42,3.604531410916581,included_category_field_assignments
+subrule_by_model,Abreviaturas,"Excepciones (desto/a/os, dello/a/os)",Llama 3.3 70B · 12 000 TPM,70,1.6467875879266944,included_category_field_assignments
+subrule_by_model,Abreviaturas,Expansión completa,GPT OSS 120B · 8 000 TPM,659,56.556814280810165,included_category_field_assignments
+subrule_by_model,Abreviaturas,Expansión completa,Llama 3.3 70B · 12 000 TPM,580,13.644811442821183,included_category_field_assignments
+subrule_by_model,Abreviaturas,No sub-rule assigned,GPT OSS 120B · 8 000 TPM,178,15.27634740817027,included_category_field_assignments
+subrule_by_model,Abreviaturas,No sub-rule assigned,Llama 3.3 70B · 12 000 TPM,98,2.3055026230973725,included_category_field_assignments
+subrule_by_model,Acentuación,No sub-rule assigned,GPT OSS 120B · 8 000 TPM,211,18.1084792310333,included_category_field_assignments
+subrule_by_model,Acentuación,No sub-rule assigned,Llama 3.3 70B · 12 000 TPM,94,2.211400475215847,included_category_field_assignments
+subrule_by_model,Cambios,Deleción,GPT OSS 120B · 8 000 TPM,100,8.582217645039478,included_category_field_assignments
+subrule_by_model,Cambios,Deleción,Llama 3.3 70B · 12 000 TPM,321,7.551697367492412,included_category_field_assignments
+subrule_by_model,Cambios,Inserción,GPT OSS 120B · 8 000 TPM,77,6.608307586680398,included_category_field_assignments
+subrule_by_model,Cambios,Inserción,Llama 3.3 70B · 12 000 TPM,247,5.8108076316841935,included_category_field_assignments
+subrule_by_model,Cambios,No sub-rule assigned,GPT OSS 120B · 8 000 TPM,38,3.2612427051150017,included_category_field_assignments
+subrule_by_model,Cambios,No sub-rule assigned,Llama 3.3 70B · 12 000 TPM,67,1.5762109770155506,included_category_field_assignments
+subrule_by_model,Cambios,Otros,GPT OSS 120B · 8 000 TPM,112,9.612083762444216,included_category_field_assignments
+subrule_by_model,Cambios,Otros,Llama 3.3 70B · 12 000 TPM,163,3.83466252617216,included_category_field_assignments
+subrule_by_model,Cambios,Sustitución,GPT OSS 120B · 8 000 TPM,261,22.39958805355304,included_category_field_assignments
+subrule_by_model,Cambios,Sustitución,Llama 3.3 70B · 12 000 TPM,745,17.526525042934104,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,No modificar otros idiomas,Llama 3.3 70B · 12 000 TPM,38,0.8939704048744913,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,No sub-rule assigned,GPT OSS 120B · 8 000 TPM,29,2.4888431170614487,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,No sub-rule assigned,Llama 3.3 70B · 12 000 TPM,4,0.0941021478815254,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,Regularización de H etimológica,GPT OSS 120B · 8 000 TPM,58,4.977686234122897,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,Regularización de H etimológica,Llama 3.3 70B · 12 000 TPM,40,0.9410214788152539,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,Regularización de i/y vocálicas,GPT OSS 120B · 8 000 TPM,107,9.182972880192242,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,Regularización de i/y vocálicas,Llama 3.3 70B · 12 000 TPM,37,0.87044486790411,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,Regularización de la nasal palatal,GPT OSS 120B · 8 000 TPM,12,1.0298661174047374,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,Regularización de labiales (b/v),GPT OSS 120B · 8 000 TPM,70,6.007552351527634,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,Regularización de labiales (b/v),Llama 3.3 70B · 12 000 TPM,69,1.6232620509563132,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,x sibilante → j,GPT OSS 120B · 8 000 TPM,44,3.7761757638173705,included_category_field_assignments
+subrule_by_model,Filológicas - instrucciones,x sibilante → j,Llama 3.3 70B · 12 000 TPM,6,0.1411532218222881,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Adecuación de grafía labiovelar,GPT OSS 120B · 8 000 TPM,2,0.17164435290078958,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Adecuación de grafía labiovelar,Llama 3.3 70B · 12 000 TPM,2,0.0470510739407627,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,E protética,GPT OSS 120B · 8 000 TPM,3,0.25746652935118436,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,No sub-rule assigned,GPT OSS 120B · 8 000 TPM,8,0.6865774116031583,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,No sub-rule assigned,Llama 3.3 70B · 12 000 TPM,3,0.07057661091114405,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Regularización de la diéresis,GPT OSS 120B · 8 000 TPM,2,0.17164435290078958,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Regularización de la diéresis,Llama 3.3 70B · 12 000 TPM,3,0.07057661091114405,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Regularización de nasales ante labial,GPT OSS 120B · 8 000 TPM,5,0.4291108822519739,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Regularización de nasales ante labial,Llama 3.3 70B · 12 000 TPM,1,0.02352553697038135,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Regularización de sibilantes,GPT OSS 120B · 8 000 TPM,83,7.123240645382767,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Regularización de sibilantes,Llama 3.3 70B · 12 000 TPM,21,0.49403627637800834,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Regularización de vibrantes,GPT OSS 120B · 8 000 TPM,4,0.34328870580157916,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Regularización de vibrantes,Llama 3.3 70B · 12 000 TPM,3,0.07057661091114405,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Simplificación de grupos consonánticos,GPT OSS 120B · 8 000 TPM,9,0.772399588053553,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Simplificación de grupos consonánticos,Llama 3.3 70B · 12 000 TPM,3,0.07057661091114405,included_category_field_assignments
+subrule_by_model,Filológicas - mecánicas,Simplificación de grupos vocálicos,GPT OSS 120B · 8 000 TPM,2,0.17164435290078958,included_category_field_assignments
+subrule_by_model,Puntuación,"Coma (,)",GPT OSS 120B · 8 000 TPM,49,4.205286646069345,included_category_field_assignments
+subrule_by_model,Puntuación,"Coma (,)",Llama 3.3 70B · 12 000 TPM,244,5.74023102077305,included_category_field_assignments
+subrule_by_model,Puntuación,No sub-rule assigned,GPT OSS 120B · 8 000 TPM,39,3.3470648815653963,included_category_field_assignments
+subrule_by_model,Puntuación,No sub-rule assigned,Llama 3.3 70B · 12 000 TPM,42,0.9880725527560167,included_category_field_assignments
+subrule_by_model,Puntuación,Punto (.),GPT OSS 120B · 8 000 TPM,67,5.750085822176451,included_category_field_assignments
+subrule_by_model,Puntuación,Punto (.),Llama 3.3 70B · 12 000 TPM,53,1.2468534594302116,included_category_field_assignments

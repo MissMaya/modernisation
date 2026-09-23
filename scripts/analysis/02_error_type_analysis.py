@@ -1,9 +1,9 @@
 """Summarise the types of errors identified by human reviewers.
 
-This section answers two focused questions:
+This section answers two practical questions:
 
-1. Which error categories were assigned most frequently overall?
-2. Did the two models receive different category-specific annotation rates?
+1. Which broad types of apparent error were assigned to each model?
+2. Which specific sub-rules account for the greatest annotation burden?
 
 Only annotation rows marked include_in_analysis=True are used. Category totals
 count distinct document–annotation pairs within each category, preventing an
@@ -11,13 +11,14 @@ annotation with two fields in the same category from being counted twice.
 Sub-rule totals count flattened category-field assignments because each field
 is itself the sub-rule classification being summarised.
 
-The script deliberately produces only one CSV and two figures:
+The script deliberately produces two CSVs and two figures:
 
     analysis_outputs/02_error_type_analysis/ERROR_TYPE_ANALYSIS_README.md
     analysis_outputs/02_error_type_analysis/tables/error_type_summary.csv
+    analysis_outputs/02_error_type_analysis/tables/subrule_priority_summary.csv
     analysis_outputs/02_error_type_analysis/figures/en/
-        error_categories_overall.png and .svg
         error_category_rates_by_model.png and .svg
+        priority_subrule_rates_by_model.png and .svg
 """
 
 import os
@@ -64,17 +65,17 @@ SECTION_README_PATH = SECTION_OUTPUT_DIR / "ERROR_TYPE_ANALYSIS_README.md"
 
 CHART_TEXT = {
     "en": {
-        "overall_categories": {
-            "title": "Which error categories were assigned most frequently?",
+        "priority_subrules": {
+            "title": "Which sub-rules drove reviewer feedback for each model?",
             "description": (
-                "This ranking shows the types of modernisation error most "
-                "often identified by reviewers across both models."
+                "This comparison shows the model-specific rates for the "
+                "sub-rules accounting for most included assignments."
             ),
             "measure": (
-                "Distinct included annotations assigned to each error "
-                "category."
+                "Assignments per 1,000 reviewed modernised tokens; sub-rules "
+                "are retained until at least 80% of assignments is covered."
             ),
-            "x_label": "Distinct annotations",
+            "x_label": "Assignments per 1,000 tokens for each model",
         },
         "categories_by_model": {
             "title": "How did category-specific error rates differ by model?",
@@ -109,22 +110,26 @@ category. Sub-rule totals count the individual category-field assignments.
 - `outputs/annotation_analysis.csv`: supplies the included error-category and
   sub-rule assignments.
 
-## Table produced by this script
+## Tables produced by this script
 
 - `error_type_summary.csv`: category and sub-rule counts and rates, overall and
   by model.
+- `subrule_priority_summary.csv`: one ranked row per sub-rule, including the
+  overall burden, documents affected and the observed rate for each model.
 
 ## Figures produced by this script
 
-- `error_categories_overall`: overall ranking of the error categories.
 - `error_category_rates_by_model`: category-specific annotation rates for the
   two models.
+- `priority_subrule_rates_by_model`: model-specific rates for the sub-rules that
+  together account for at least 80% of included assignments. Sub-rules tied at
+  the cutoff are retained.
 
 Each figure is saved as both PNG and SVG.
 
 ## Interpretation
 
-The figures describe the categories assigned by reviewers. They do not show
+The figures describe categories and sub-rules assigned by reviewers. They do not show
 how many opportunities each model had to apply each individual modernisation
 rule, and they do not yet adjust for archive or reviewer effects.
 """
@@ -335,8 +340,21 @@ included_annotations_df["subrule_for_summary"] = (
     .fillna("No sub-rule assigned")
 )
 
+# Count a category–sub-rule assignment only once within a source annotation.
+# This protects the summary against accidental duplicate flattened rows while
+# preserving genuinely different sub-rules attached to the same annotation.
+subrule_annotations_df = included_annotations_df.drop_duplicates(
+    subset=[
+        "filename_stem",
+        "annotation_id",
+        "model",
+        "effective_error_category",
+        "subrule_for_summary",
+    ]
+)
+
 subrule_by_model_df = (
-    included_annotations_df.groupby(
+    subrule_annotations_df.groupby(
         [
             "effective_error_category",
             "subrule_for_summary",
@@ -360,7 +378,7 @@ subrule_by_model_df.insert(0, "summary_level", "subrule_by_model")
 subrule_by_model_df["count_definition"] = "included_category_field_assignments"
 
 subrule_overall_df = (
-    included_annotations_df.groupby(
+    subrule_annotations_df.groupby(
         ["effective_error_category", "subrule_for_summary"],
         as_index=False,
     )
@@ -406,16 +424,124 @@ save_table(
 
 
 # ---------------------------------------------------------------------------
+# Create a ranked, human-readable sub-rule priority table
+# ---------------------------------------------------------------------------
+
+subrule_document_counts = (
+    subrule_annotations_df.groupby(
+        ["effective_error_category", "subrule_for_summary"]
+    )["filename_stem"]
+    .nunique()
+    .rename("documents_affected")
+    .reset_index()
+    .rename(
+        columns={
+            "effective_error_category": "error_category",
+            "subrule_for_summary": "subrule",
+        }
+    )
+)
+
+subrule_priority_df = subrule_overall_df[
+    ["error_category", "subrule", "count", "rate_per_1000_tokens"]
+].rename(columns={"count": "included_assignments"})
+subrule_priority_df = subrule_priority_df.merge(
+    subrule_document_counts,
+    on=["error_category", "subrule"],
+    how="left",
+    validate="one_to_one",
+)
+subrule_priority_df["share_of_included_assignments_pct"] = (
+    subrule_priority_df["included_assignments"]
+    / len(subrule_annotations_df)
+    * 100
+)
+
+# Add the observed count and rate for each model to the same ranked row. The
+# model names are stored as values rather than embedded in column names, making
+# the output stable if the display names change later.
+for position, model in enumerate(models, start=1):
+    model_values = (
+        subrule_by_model_df.loc[
+            subrule_by_model_df["model"].astype(str).eq(model),
+            ["error_category", "subrule", "count", "rate_per_1000_tokens"],
+        ]
+        .rename(
+            columns={
+                "count": f"model_{position}_assignments",
+                "rate_per_1000_tokens": f"model_{position}_rate_per_1000_tokens",
+            }
+        )
+    )
+    subrule_priority_df = subrule_priority_df.merge(
+        model_values,
+        on=["error_category", "subrule"],
+        how="left",
+        validate="one_to_one",
+    )
+    subrule_priority_df.insert(
+        subrule_priority_df.columns.get_loc(f"model_{position}_assignments"),
+        f"model_{position}",
+        model,
+    )
+
+count_columns = [f"model_{position}_assignments" for position in (1, 2)]
+rate_columns = [
+    f"model_{position}_rate_per_1000_tokens" for position in (1, 2)
+]
+subrule_priority_df[count_columns + rate_columns] = (
+    subrule_priority_df[count_columns + rate_columns].fillna(0)
+)
+subrule_priority_df["absolute_model_rate_difference"] = (
+    subrule_priority_df[rate_columns[0]] - subrule_priority_df[rate_columns[1]]
+).abs()
+subrule_priority_df = subrule_priority_df.sort_values(
+    ["rate_per_1000_tokens", "included_assignments"],
+    ascending=False,
+).reset_index(drop=True)
+subrule_priority_df.insert(0, "priority_rank", range(1, len(subrule_priority_df) + 1))
+subrule_priority_df["cumulative_assignment_share_pct"] = (
+    subrule_priority_df["included_assignments"].cumsum()
+    / subrule_priority_df["included_assignments"].sum()
+    * 100
+)
+
+save_table(
+    subrule_priority_df,
+    tables_directory / "subrule_priority_summary.csv",
+)
+
+
+# ---------------------------------------------------------------------------
 # Generate the two error-type figures
 # ---------------------------------------------------------------------------
 
 apply_plot_style()
 model_colours = model_colour_map(models)
 
-overall_plot_df = category_overall_df.sort_values("count", ascending=True)
 category_order = category_overall_df.sort_values(
     "count", ascending=False
 )["error_category"].tolist()
+# Select the smallest leading set whose cumulative assignment count reaches
+# 80%. If the final included sub-rule is tied with others on assignment count,
+# retain the full tie rather than separating equally frequent sub-rules.
+cutoff_row_index = subrule_priority_df[
+    "cumulative_assignment_share_pct"
+].ge(80).idxmax()
+cutoff_assignment_count = subrule_priority_df.loc[
+    cutoff_row_index, "included_assignments"
+]
+top_subrules_plot_df = subrule_priority_df.loc[
+    subrule_priority_df["included_assignments"].ge(cutoff_assignment_count)
+].copy()
+top_subrules_plot_df = top_subrules_plot_df.sort_values(
+    ["included_assignments", "rate_per_1000_tokens"],
+    ascending=True,
+)
+top_subrules_plot_df["display_label"] = top_subrules_plot_df.apply(
+    lambda row: fill(f"{row['error_category']} — {row['subrule']}", 42),
+    axis=1,
+)
 
 for language in OUTPUT_LANGUAGES:
     if language not in CHART_TEXT:
@@ -426,34 +552,68 @@ for language in OUTPUT_LANGUAGES:
     language_directory = figures_directory / language
     text = CHART_TEXT[language]
 
-    # Figure 1: overall ranking of the six error categories.
-    fig, ax = plt.subplots(figsize=(11, 7.6))
-    fig.subplots_adjust(top=0.72, bottom=0.14, left=0.35, right=0.92)
-    bars = ax.barh(
-        [fill(category, 30) for category in overall_plot_df["error_category"]],
-        overall_plot_df["count"],
-        color=COLOURS["gold"],
-        height=0.62,
-    )
-    ax.set_xlabel(text["overall_categories"]["x_label"])
+    # Figure 1: compare model-specific rates for the sub-rules responsible for
+    # most of the reviewer feedback. The selection is based on overall counts,
+    # while the displayed rates account for unequal model token exposure.
+    figure_height = max(8.0, 4.8 + 0.46 * len(top_subrules_plot_df))
+    fig, ax = plt.subplots(figsize=(12, figure_height))
+    fig.subplots_adjust(top=0.72, bottom=0.15, left=0.43, right=0.92)
+    y_positions = list(range(len(top_subrules_plot_df)))
+
+    for y_position, (_, row) in zip(
+        y_positions, top_subrules_plot_df.iterrows()
+    ):
+        ax.plot(
+            [
+                row["model_1_rate_per_1000_tokens"],
+                row["model_2_rate_per_1000_tokens"],
+            ],
+            [y_position, y_position],
+            color=COLOURS["grid"],
+            linewidth=2,
+            zorder=1,
+        )
+
+    for position, model in enumerate(models, start=1):
+        ax.scatter(
+            top_subrules_plot_df[
+                f"model_{position}_rate_per_1000_tokens"
+            ],
+            y_positions,
+            label=model,
+            color=model_colours[model],
+            s=68,
+            edgecolor=COLOURS["panel"],
+            linewidth=0.7,
+            zorder=3,
+        )
+
+    ax.set_yticks(y_positions)
+    ax.set_yticklabels(top_subrules_plot_df["display_label"])
+    ax.set_xlabel(text["priority_subrules"]["x_label"])
     ax.grid(axis="x")
     ax.set_axisbelow(True)
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="y", length=0)
-    ax.bar_label(bars, padding=5, fontsize=9.5, fontweight="bold")
-    ax.set_xlim(0, max(float(overall_plot_df["count"].max()) * 1.13, 1))
+    ax.legend(
+        frameon=False,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.055),
+        bbox_transform=fig.transFigure,
+        ncol=2,
+    )
     add_chart_header(
         fig,
         **{
-            key: text["overall_categories"][key]
+            key: text["priority_subrules"][key]
             for key in ("title", "description", "measure")
         },
     )
     add_figure_note(
         fig,
-        "An annotation assigned to two different categories contributes once to each category.",
+        "Sub-rules are ranked by overall assignment count and retained until at least 80% is represented; ties at the cutoff are included.",
     )
-    save_figure(fig, language_directory, "error_categories_overall")
+    save_figure(fig, language_directory, "priority_subrule_rates_by_model")
 
     # Figure 2: category-specific rates for both models.
     comparison_df = (
@@ -528,6 +688,10 @@ for language in OUTPUT_LANGUAGES:
 
 print(f"\nIncluded assignment rows summarised: {len(included_annotations_df)}")
 print(f"Distinct error categories: {category_overall_df['error_category'].nunique()}")
+print(
+    "Sub-rules displayed in the 80% chart: "
+    f"{len(top_subrules_plot_df)} of {len(subrule_priority_df)}"
+)
 print(f"\nSummary table saved to: {tables_directory}")
 print(f"Figures saved to: {figures_directory}")
 print(f"README saved to: {SECTION_README_PATH}")
