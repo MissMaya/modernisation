@@ -1,14 +1,15 @@
-"""Audit data completeness and the realised allocation of the review sample.
+"""
+Script to audit data completeness and provide an overview
 
-Random allocation reduces systematic bias, but it does not guarantee perfect
-balance in one realised sample. This script checks whether model, archive and
-reviewer exposure are uneven before model performance is assessed.
+How were documents distributed between reviewers and models?
 
-It creates three tables and two figures under
-``analysis_outputs/00_data_audit``. It does not decide which model performed
-better.
+Script creates three tables and two figures under
+``analysis_outputs/00_data_audit``. 
 """
 
+# ---------------------------------------------------------------------------
+# Import the required modules
+# ---------------------------------------------------------------------------
 import os
 from pathlib import Path
 import shutil
@@ -50,36 +51,36 @@ ANNOTATION_ANALYSIS_PATH = INPUT_DIR / "annotation_analysis.csv"
 
 
 # ---------------------------------------------------------------------------
-# Define the visible chart wording
+# Specify wording for charts
 # ---------------------------------------------------------------------------
 
-# English figures are produced by default. Before adding "es" to
-# OUTPUT_LANGUAGES in analysis_utils.py, add the complete Spanish titles,
-# descriptions, measure lines and axis labels to this dictionary.
+# English figures are produced by default. If Spanish output is needed, add the 
+# complete Spanish titles, descriptions, measure lines and axis labels here.
+# then add "es" to OUTPUT_LANGUAGES in analysis_utils.py, 
 CHART_TEXT = {
     "en": {
         "model_exposure": {
-            "title": "How much reviewed material came from each model?",
+            "title": "How much of the modernised text came from each model?",
             "description": (
-                "This check shows the realised difference in document and "
-                "token exposure between the two model groups."
+                "This chart shows the document and token-level split"
+                "between the two models."
             ),
             "measure": (
-                "Sample documents and modernised tokens from documents with "
-                "available annotation data."
+                "Counts of modernised documents per model (left) and the constituent tokens "
+                "reviewed per model (right)."
             ),
-            "documents_label": "Share of reviewed documents",
-            "tokens_label": "Share of reviewed modernised tokens",
+            "documents_label": "Percentage of reviewed documents",
+            "tokens_label": "Percentage of reviewed tokens",
         },
         "reviewer_allocation": {
-            "title": "How were model outputs distributed between reviewers?",
+            "title": "How were model outputs split between reviewers?",
             "description": (
-                "This check shows whether individual reviewers received "
-                "different mixtures of documents from the two models."
+                "Chart showing the variability in the overall composition of each "
+                "review packet in terms of the underlying model used for the modernisation."
             ),
             "measure": "Reviewed documents in each reviewer packet, split by model.",
             "x_label": "Reviewer packet",
-            "y_label": "Share of reviewed documents within packet",
+            "y_label": "Percentage of reviewed documents within packet",
         },
     }
 }
@@ -87,18 +88,19 @@ CHART_TEXT = {
 
 README_TEXT = """# 00 · Data and allocation audit
 
-## What this section is trying to show
+## Aim of analysis
 
-This section establishes whether the analysis data are complete and describes
-the realised allocation of models, archives and reviewers.
+Checks whether the analysis data are complete and extracts the split of documents
+and tokens between models and reviewers. 
 
 The documents were allocated randomly, but randomisation does not guarantee
-perfect balance in one realised sample. The model groups can contain different
+perfect balance. The model groups can contain different
 numbers or lengths of documents, reviewers can receive different mixtures of
 model outputs, and archives can be concentrated under particular models or
-reviewers. These patterns must be considered in the adjusted comparison.
+reviewers. These patterns are considered when interpreting any descriptive
+analyses and in any later statistical modelling.
 
-A completed review with no annotations is kept distinct from a document whose
+Note that a completed review with no annotations is distinct from a document whose
 annotation data are unavailable. Missing annotation data are not counted as
 zero errors.
 
@@ -109,8 +111,9 @@ zero errors.
 
 ## Tables produced by this script
 
-- `audit_summary.csv`: headline counts for data completeness, reviewed texts
-  and included or excluded annotation assignments.
+- `audit_summary.csv`: headline counts for data completeness, distinct
+  annotations, and included or excluded error-label assignment rows. A single
+  annotation can have more than one assignment row.
 - `allocation_summary.csv`: model totals, model allocation within reviewer
   packets, model allocation within archives, and archive concentration within
   reviewer packets.
@@ -121,23 +124,13 @@ zero errors.
 
 - `model_sample_and_token_exposure`: reviewed document and token exposure for
   each model.
-- `model_allocation_by_reviewer_packet`: the model mixture received by each
+- `model_allocation_by_reviewer_packet`: the model split received by each
   reviewer.
-
-Each figure is saved as both PNG and SVG.
-
-## Interpretation
-
-These outputs describe allocation and completeness, not model quality. The
-substantive comparison begins in `01_model_comparison`, where archive,
-reviewer and document length will be considered alongside model identity.
-Because each reviewer corresponds to one packet, reviewer and packet are
-treated as one allocation effect rather than two independent effects.
 """
 
 
 # ---------------------------------------------------------------------------
-# Check, load and validate the Stage 8 analysis tables
+# First check, load and validate the analysis tables
 # ---------------------------------------------------------------------------
 
 check_required_files(
@@ -228,8 +221,8 @@ pre_modernisation_text_available = documents_df[
     "pre_modernisation_text_available"
 ].fillna(False)
 
-# A document contributes to token-adjusted analyses only when its annotation
-# data and positive modernised token count are both available.
+# A document is included in the token-adjusted analyses only when its annotation
+# data and modernised token count are both available.
 usable_for_rate_analysis = (
     annotation_data_available
     & documents_df["n_modernised_tokens"].notna()
@@ -246,9 +239,27 @@ excluded_assignments = int(
     (~annotations_df["include_in_analysis"].fillna(False)).sum()
 )
 
+# The annotation table is flattened: one original annotation can occupy
+# several rows when the reviewer attached several category-sub-rule labels.
+# Count original annotations separately using document + annotation ID.
+# An annotation is included when at least one assignment row is included. 
+# Only fully exclude an annotation if there is no error labelling attached.
+annotation_status_df = (
+    annotations_df.assign(
+        assignment_included = annotations_df["include_in_analysis"].fillna(False)
+    )
+    .groupby(["filename_stem", "annotation_id"], dropna = False)[
+        "assignment_included"
+    ]
+    .any()
+)
+recorded_distinct_annotations = len(annotation_status_df)
+included_distinct_annotations = int(annotation_status_df.sum())
+fully_excluded_distinct_annotations = int((~annotation_status_df).sum())
+
 
 # ---------------------------------------------------------------------------
-# Replace only this section's previous outputs
+# On a re-run, replace only this section's previous outputs
 # ---------------------------------------------------------------------------
 
 if (
@@ -263,11 +274,11 @@ if SECTION_OUTPUT_DIR.exists():
     shutil.rmtree(SECTION_OUTPUT_DIR)
 
 tables_directory, figures_directory = create_output_folders(SECTION_OUTPUT_DIR)
-SECTION_README_PATH.write_text(README_TEXT, encoding="utf-8")
+SECTION_README_PATH.write_text(README_TEXT, encoding = "utf-8")
 
 
 # ---------------------------------------------------------------------------
-# Create the headline completeness table
+# Create the table of data completeness
 # ---------------------------------------------------------------------------
 
 audit_summary_df = pd.DataFrame(
@@ -284,6 +295,9 @@ audit_summary_df = pd.DataFrame(
             "reviewed_documents_with_no_annotations",
             "modernised_texts_available",
             "pre_modernisation_texts_available",
+            "recorded_distinct_annotations",
+            "included_distinct_annotations",
+            "fully_excluded_distinct_annotations",
             "recorded_assignment_rows",
             "included_assignment_rows",
             "excluded_assignment_rows",
@@ -304,6 +318,9 @@ audit_summary_df = pd.DataFrame(
             ),
             int(modernised_text_available.sum()),
             int(pre_modernisation_text_available.sum()),
+            recorded_distinct_annotations,
+            included_distinct_annotations,
+            fully_excluded_distinct_annotations,
             len(annotations_df),
             included_assignments,
             excluded_assignments,
@@ -425,7 +442,7 @@ save_table(
 
 
 # ---------------------------------------------------------------------------
-# Save one exceptions table rather than several missing-data reports
+# Create an exceptions table 
 # ---------------------------------------------------------------------------
 
 documents_requiring_attention_df = documents_df.loc[
@@ -454,7 +471,7 @@ save_table(
 
 
 # ---------------------------------------------------------------------------
-# Prepare two concise audit figures
+# Set up the two plots 
 # ---------------------------------------------------------------------------
 
 apply_plot_style()
@@ -477,9 +494,8 @@ reviewer_packet_pivot = (
     .sort_index()
 )
 
-# Add a short reviewer identifier beneath each packet number. Reviewer and
-# packet identify the same review assignment in this dataset, but displaying
-# both makes the chart easier to interpret without consulting another table.
+# Add a short reviewer identifier beneath each packet number to make
+# packet identification easier
 reviewer_labels = (
     reviewer_model_plot_df[["reviewer_packet", "reviewer_name"]]
     .drop_duplicates()
@@ -503,13 +519,13 @@ for language in OUTPUT_LANGUAGES:
 
     # Figure 1: combine reviewed document and token exposure in one figure so
     # that unequal allocation is visible without producing repetitive charts.
-    fig, axes = plt.subplots(1, 2, figsize=(12, 7.2))
+    fig, axes = plt.subplots(1, 2, figsize = (12, 7.2))
     fig.subplots_adjust(
-        top=0.72,
-        bottom=0.22,
-        left=0.10,
-        right=0.94,
-        wspace=0.34,
+        top = 0.72,
+        bottom = 0.22,
+        left = 0.10,
+        right = 0.94,
+        wspace = 0.34,
     )
 
     document_counts = model_plot_df["documents_usable_for_rate_analysis"]
@@ -522,40 +538,40 @@ for language in OUTPUT_LANGUAGES:
     document_bars = axes[0].bar(
         display_labels,
         document_values,
-        color=colours,
-        width=0.58,
+        color = colours,
+        width = 0.58,
     )
     axes[0].set_ylabel(text["model_exposure"]["documents_label"])
     axes[0].bar_label(
         document_bars,
-        labels=[f"{int(value):,}" for value in document_counts],
-        padding=5,
-        fontsize=10,
-        fontweight="bold",
+        labels = [f"{int(value):,}" for value in document_counts],
+        padding = 5,
+        fontsize = 10,
+        fontweight = "bold",
     )
 
     token_bars = axes[1].bar(
         display_labels,
         token_values,
-        color=colours,
-        width=0.58,
+        color = colours,
+        width = 0.58,
     )
     axes[1].set_ylabel(text["model_exposure"]["tokens_label"])
     axes[1].bar_label(
         token_bars,
-        labels=[f"{int(value):,}" for value in token_counts],
-        padding=5,
-        fontsize=10,
-        fontweight="bold",
+        labels = [f"{int(value):,}" for value in token_counts],
+        padding = 5,
+        fontsize = 10,
+        fontweight = "bold",
     )
 
     for ax in axes:
         ax.set_ylim(0, 1)
-        ax.yaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=0))
-        ax.grid(axis="y")
+        ax.yaxis.set_major_formatter(PercentFormatter(xmax = 1, decimals = 0))
+        ax.grid(axis = "y")
         ax.set_axisbelow(True)
         ax.spines[["top", "right"]].set_visible(False)
-        ax.tick_params(axis="x", labelrotation=0)
+        ax.tick_params(axis="x", labelrotation = 0)
         for label in ax.get_xticklabels():
             label.set_horizontalalignment("center")
 
@@ -568,20 +584,19 @@ for language in OUTPUT_LANGUAGES:
     )
     add_figure_note(
         fig,
-        "Different exposure does not indicate better or worse performance; it determines how later rates and uncertainty should be interpreted.",
+        "",
     )
     save_figure(fig, language_directory, "model_sample_and_token_exposure")
 
-    # Figure 2: model allocation within reviewer packets is the clearest visual
-    # check of the link between reviewer identity and model exposure.
-    fig, ax = plt.subplots(figsize=(11, 7.4))
-    fig.subplots_adjust(top=0.72, bottom=0.20, left=0.10, right=0.92)
-    packet_totals = reviewer_packet_pivot.sum(axis=1)
+    # Figure 2 model allocation by reviewer
+    fig, ax = plt.subplots(figsize = (11, 7.4))
+    fig.subplots_adjust(top = 0.72, bottom = 0.20, left = 0.10, right = 0.92)
+    packet_totals = reviewer_packet_pivot.sum(axis = 1)
     reviewer_packet_percentages = reviewer_packet_pivot.div(
         packet_totals.replace(0, pd.NA),
-        axis=0,
+        axis = 0,
     ).fillna(0)
-    bottom = pd.Series(0, index=reviewer_packet_percentages.index, dtype=float)
+    bottom = pd.Series(0, index = reviewer_packet_percentages.index, dtype = float)
 
     for model in reviewer_packet_percentages.columns:
         values = reviewer_packet_percentages[model].astype(float)
@@ -589,9 +604,9 @@ for language in OUTPUT_LANGUAGES:
             range(len(reviewer_packet_percentages.index)),
             values,
             bottom=bottom,
-            label=str(model),
-            color=model_colours[str(model)],
-            width=0.67,
+            label = str(model),
+            color = model_colours[str(model)],
+            width = 0.67,
         )
         bottom = bottom + values
 
@@ -604,19 +619,19 @@ for language in OUTPUT_LANGUAGES:
     ax.set_xticks(range(len(packet_axis_labels)))
     ax.set_xticklabels(packet_axis_labels)
     ax.set_ylim(0, 1)
-    ax.yaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=0))
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax = 1, decimals = 0))
 
     ax.set_xlabel(text["reviewer_allocation"]["x_label"])
     ax.set_ylabel(text["reviewer_allocation"]["y_label"])
-    ax.grid(axis="y")
+    ax.grid(axis = "y")
     ax.set_axisbelow(True)
     ax.spines[["top", "right"]].set_visible(False)
     ax.legend(
-        frameon=False,
-        loc="lower center",
-        bbox_to_anchor=(0.5, 0.055),
-        bbox_transform=fig.transFigure,
-        ncol=2,
+        frameon = False,
+        loc = "lower center",
+        bbox_to_anchor = (0.5, 0.055),
+        bbox_transform = fig.transFigure,
+        ncol = 2,
     )
     add_chart_header(
         fig,
@@ -627,7 +642,7 @@ for language in OUTPUT_LANGUAGES:
     )
     add_figure_note(
         fig,
-        "Each reviewer corresponds to one packet. Later model estimates must account for this realised reviewer–model allocation.",
+        "",
     )
     save_figure(
         fig,
@@ -637,13 +652,16 @@ for language in OUTPUT_LANGUAGES:
 
 
 # ---------------------------------------------------------------------------
-# Print a brief completion report
+# Brief completion report for Stage 0 
 # ---------------------------------------------------------------------------
 
 print(f"\nSample documents audited: {len(documents_df)}")
 print(f"Documents with annotation data: {int(annotation_data_available.sum())}")
 print(f"Documents without annotation data: {int((~annotation_data_available).sum())}")
 print(f"Documents usable for rate analysis: {int(usable_for_rate_analysis.sum())}")
+print(f"Recorded distinct annotations: {recorded_distinct_annotations}")
+print(f"Included distinct annotations: {included_distinct_annotations}")
+print(f"Fully excluded distinct annotations: {fully_excluded_distinct_annotations}")
 print(f"Included assignment rows: {included_assignments}")
 print(f"Excluded assignment rows: {excluded_assignments}")
 print(f"\nTables saved to: {tables_directory}")
