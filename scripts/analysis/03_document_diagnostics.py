@@ -1,37 +1,27 @@
-"""Identify the individual documents that most need closer examination.
+"""
+Examine annotation count in relation to document length.
 
-Stages 1 and 2 show that annotation rates differ between the models and that
-some error types contribute much more than others. This section locates the
-documents behind those overall patterns.
+For every reviewed document, report document length, annotation count,
+annotation rate, model, archive, reviewer, and the most frequently assigned
+error category and category-sub-rule.
 
-For every reviewed document, the script records its length, annotation count,
-annotation rate, archive, reviewer, dominant error category, dominant sub-rule
-and repeated-document family. It then creates a shorter review list containing
-documents in the highest 10% for either:
+The script also identifies documents with an annotation count or annotation rate
+that exceeds the upper outlier threshold for the model that produced it. The threshold is
+Q3 + 1.5 x IQR and is calculated separately for each measure and model.
 
-* the number of distinct included annotations; or
-* distinct included annotations per 1,000 modernised tokens.
-
-The two criteria are deliberately kept separate. A long document can contain
-many annotations without having an exceptional rate, while a short document
-can have an exceptional rate based on relatively few annotations. Document
-length is therefore retained in the table and shown directly on the scatter
-plot so that high rates from small token denominators can be examined without
-introducing an arbitrary short-document threshold.
-
-A repeated-document family is derived conservatively by removing only a final
-suffix matching ``_duplicated_<number>``. All other filename stems remain
-unchanged.
-
-The script produces two tables and two figures:
+Outputs:
 
     analysis_outputs/03_document_diagnostics/
         DOCUMENT_DIAGNOSTICS_README.md
         tables/document_diagnostics.csv
-        tables/documents_for_review.csv
+        tables/upper_outlier_documents.csv
         figures/en/document_length_and_annotation_burden.png and .svg
-        figures/en/flagged_document_error_profiles.png and .svg
+        figures/en/upper_outlier_document_error_profiles.png and .svg
 """
+
+# ---------------------------------------------------------------------------
+# Import the required modules
+# ---------------------------------------------------------------------------
 
 import os
 from pathlib import Path
@@ -72,44 +62,43 @@ ANALYSIS_OUTPUT_DIR = PROJECT_DIR / "analysis_outputs"
 SECTION_OUTPUT_DIR = ANALYSIS_OUTPUT_DIR / "03_document_diagnostics"
 SECTION_README_PATH = SECTION_OUTPUT_DIR / "DOCUMENT_DIAGNOSTICS_README.md"
 
-FAMILY_SUFFIX_PATTERN = re.compile(r"_duplicated_\d+$", flags=re.IGNORECASE)
-PRIORITY_PERCENTILE = 0.90
+FAMILY_SUFFIX_PATTERN = re.compile(r"_duplicated_\d+$", flags = re.IGNORECASE)
 
 
 # ---------------------------------------------------------------------------
-# Define the visible chart wording
+# Specify wording for charts
 # ---------------------------------------------------------------------------
 
 CHART_TEXT = {
     "en": {
         "burden": {
-            "title": "Which documents received the heaviest reviewer feedback?",
+            "title": "How did annotation count vary with document length?",
             "description": (
-                "This comparison separates documents with many annotations "
-                "from high rates that may partly reflect short texts."
+                "Annotation count is plotted against document length for all "
+                "reviewed documents."
             ),
             "measure": (
-                "Each point is one reviewed document; numbered points are in "
-                "the highest 10% by annotation count or annotation rate and "
-                "are identified in the adjacent key."
+                "Numbered documents are those that exceed the model-specific upper outlier  "
+                "threshold for annotation count and/or annotation rate."
             ),
-            "x_label": "Modernised tokens",
-            "y_label": "Distinct included annotations",
+            "x_label": "Document length (modernised tokens)",
+            "y_label": "Distinct reviewer annotations",
         },
         "profiles": {
             "title": (
-                "What types of error were recorded in documents flagged "
-                "for closer review?"
+                "Which error categories were assigned to the numbered documents on the "
+                "scatterplot?"
             ),
             "description": (
-                "This comparison shows the category composition of reviewer "
-                "feedback in documents flagged for closer examination."
+                "The chart shows the error-category composition of reviewer "
+                "feedback for the numbered documents in the preceding "
+                "scatter plot."
             ),
             "measure": (
-                "Distinct annotations within each category; one annotation "
-                "can contribute to more than one category."
+                "Distinct annotations by error category. An annotation with "
+                "several sub-rules contributes once to each category."
             ),
-            "x_label": "Category-specific annotations",
+            "x_label": "Distinct annotations by error category",
         },
     }
 }
@@ -117,34 +106,42 @@ CHART_TEXT = {
 
 README_TEXT = """# 03 · Document diagnostics
 
-## What this section is trying to show
+## Aim of analysis
 
-This section identifies the individual documents behind the model- and
-error-type patterns reported in Sections 1 and 2.
+To examine annotation count in relation to document length and identify
+documents with unusually high annotation counts or annotation rates.
 
-It distinguishes between documents with many annotations and documents with a
+It anlayses both documents with many annotations and documents with a
 high annotation rate. This matters because a short document can have a high
 rate per 1,000 tokens even when its absolute annotation count is moderate.
 
-## How documents are selected for closer review
+## Upper outlier thresholds
 
-`documents_for_review.csv` contains documents in the highest 10% for either:
+`upper_outlier_documents.csv` contains documents exceeding the upper outlier
+threshold for either:
 
 - distinct included annotation count; or
 - distinct included annotations per 1,000 modernised tokens.
 
-The table shows which criterion selected each document and retains its
-modernised token count. Document length should be considered when interpreting
-high rates because a moderate annotation count divided by a small number of
-tokens can produce a high rate per 1,000 tokens. No separate short-document
-cutoff is imposed.
+The upper outlier threshold is Q3 + 1.5 x IQR, where Q3 is the 75th percentile
+and IQR is the range between the 25th and 75th percentiles. It is calculated
+separately for each measure and model.
 
-## Document-family rule
+These thresholds identify documents that are unusual relative to other
+documents produced by the same model. 
 
-The family identifier is created by removing only a final suffix of the form
-`_duplicated_<number>` from `filename_stem`. All other stems remain unchanged.
-The table states whether a document belongs to a family represented more than
-once in the reviewed sample.
+The numbered documents are ordered to try to flag the most useful to look at for 
+prompt refinement. Documents exceeding both count and rate thresholds come first, 
+followed by count-only and then rate-only outliers.
+Within each group, documents are ordered by annotation count and then annotation
+rate, both descending. This puts evidence supported by both measures first and
+places rate-only cases, which can be affected by short documents, last. The
+numbers indicate review order, not model performance.
+
+`document_diagnostics.csv` contains one row for every document plotted in the
+scatter plot. It reports the model, document length, annotation count,
+annotation rate, model-specific thresholds and whether each document exceeds
+the count threshold, the rate threshold, both or neither.
 
 ## Inputs
 
@@ -154,25 +151,18 @@ once in the reviewed sample.
 ## Tables produced by this script
 
 - `document_diagnostics.csv`: all reviewed documents, with annotation burden,
-  document context and dominant error types.
-- `documents_for_review.csv`: the shorter list selected by the two highest-10%
-  criteria described above.
+  document context and the most frequently assigned error category and
+  category-sub-rule. Repeated-document family fields are retained for later
+  analysis.
+- `upper_outlier_documents.csv`: documents exceeding either upper outlier
+  threshold, with the criterion recorded.
 
 ## Figures produced by this script
 
 - `document_length_and_annotation_burden`: annotation counts against document
-  length, with numbered flagged documents identified in an adjacent key.
-- `flagged_document_error_profiles`: category composition for the documents
-  flagged for closer review.
-
-Each figure is saved as both PNG and SVG.
-
-## Interpretation
-
-These are diagnostic outputs, not model rankings. Archive, reviewer, error
-type, length and repeated-family membership are retained so that apparent
-model failures can be checked for recurring textual patterns or human-review
-effects in the following analyses.
+  length, with numbered upper outliers identified in an adjacent key.
+- `upper_outlier_document_error_profiles`: category composition for the same
+  numbered documents.
 """
 
 
@@ -182,16 +172,16 @@ effects in the following analyses.
 
 check_required_files(
     [DOCUMENT_ANALYSIS_PATH, ANNOTATION_ANALYSIS_PATH],
-    preceding_command="python scripts/construct_tables.py",
+    preceding_command = "python scripts/construct_tables.py",
 )
 
 documents_df = pd.read_csv(
     DOCUMENT_ANALYSIS_PATH,
-    dtype={"filename_stem": "string"},
+    dtype = {"filename_stem": "string"},
 )
 annotations_df = pd.read_csv(
     ANNOTATION_ANALYSIS_PATH,
-    dtype={
+    dtype = {
         "filename_stem": "string",
         "effective_error_category": "string",
         "effective_subrule": "string",
@@ -249,7 +239,7 @@ for column in (
     "n_included_assignments",
     "included_annotations_per_1000_tokens",
 ):
-    documents_df[column] = pd.to_numeric(documents_df[column], errors="coerce")
+    documents_df[column] = pd.to_numeric(documents_df[column], errors = "coerce")
 
 
 # ---------------------------------------------------------------------------
@@ -275,9 +265,9 @@ included_annotations_df = annotations_df.loc[
 # Keep only assignments belonging to documents included in this analysis.
 included_annotations_df = included_annotations_df.merge(
     analysis_df[["filename_stem"]],
-    on="filename_stem",
-    how="inner",
-    validate="many_to_one",
+    on = "filename_stem",
+    how = "inner",
+    validate = "many_to_one",
 )
 
 if included_annotations_df["effective_error_category"].isna().any():
@@ -288,7 +278,7 @@ if included_annotations_df["effective_error_category"].isna().any():
 
 
 # ---------------------------------------------------------------------------
-# Derive conservative repeated-document family information
+# Retain repeated-document family identifiers for later analysis
 # ---------------------------------------------------------------------------
 
 def derive_document_family(filename_stem):
@@ -308,7 +298,7 @@ analysis_df["repeated_document_family"] = family_sizes.gt(1)
 
 
 # ---------------------------------------------------------------------------
-# Summarise the dominant category and sub-rule within each document
+# Summarise the most frequently assigned category and sub-rule by document
 # ---------------------------------------------------------------------------
 
 def join_joint_modes(values):
@@ -321,15 +311,15 @@ def join_joint_modes(values):
     return " | ".join(modes)
 
 
-# Count an annotation once within a category, even when several field rows for
-# that category were created during flattening.
+# Count each annotation once per category. Two sub-rules from the same category
+# still add only one annotation to that category total.
 category_annotations_df = included_annotations_df.drop_duplicates(
-    subset=["filename_stem", "annotation_id", "effective_error_category"]
+    subset = ["filename_stem", "annotation_id", "effective_error_category"]
 )
-dominant_category_df = (
+most_frequent_category_df = (
     category_annotations_df.groupby("filename_stem")["effective_error_category"]
     .agg(join_joint_modes)
-    .rename("dominant_error_category")
+    .rename("most_frequent_error_category")
     .reset_index()
 )
 
@@ -344,87 +334,123 @@ included_annotations_df["category_and_subrule"] = (
     + included_annotations_df["subrule_for_summary"].astype(str)
 )
 subrule_annotations_df = included_annotations_df.drop_duplicates(
-    subset=[
+    subset = [
         "filename_stem",
         "annotation_id",
         "effective_error_category",
         "subrule_for_summary",
     ]
 )
-dominant_subrule_df = (
+most_frequent_subrule_df = (
     subrule_annotations_df.groupby("filename_stem")["category_and_subrule"]
     .agg(join_joint_modes)
-    .rename("dominant_subrule")
+    .rename("most_frequent_category_subrule")
     .reset_index()
 )
 
 analysis_df = analysis_df.merge(
-    dominant_category_df,
-    on="filename_stem",
-    how="left",
-    validate="one_to_one",
+    most_frequent_category_df,
+    on = "filename_stem",
+    how = "left",
+    validate = "one_to_one",
 )
 analysis_df = analysis_df.merge(
-    dominant_subrule_df,
-    on="filename_stem",
-    how="left",
-    validate="one_to_one",
+    most_frequent_subrule_df,
+    on = "filename_stem",
+    how = "left",
+    validate = "one_to_one",
 )
 
 zero_annotation_document = analysis_df["n_included_annotations"].eq(0)
-analysis_df.loc[zero_annotation_document, "dominant_error_category"] = (
+analysis_df.loc[zero_annotation_document, "most_frequent_error_category"] = (
     "No included annotations"
 )
-analysis_df.loc[zero_annotation_document, "dominant_subrule"] = (
+analysis_df.loc[zero_annotation_document, "most_frequent_category_subrule"] = (
     "No included annotations"
 )
 
 
 # ---------------------------------------------------------------------------
-# Select documents requiring closer examination
+# Identify upper outliers within each model group
 # ---------------------------------------------------------------------------
 
-# ``interpolation='higher'`` ensures that the threshold is an observed value.
-# Ties at either boundary are retained, so the selected share can exceed 10%.
-count_threshold = analysis_df["n_included_annotations"].quantile(
-    PRIORITY_PERCENTILE,
-    interpolation="higher",
-)
-rate_threshold = analysis_df["included_annotations_per_1000_tokens"].quantile(
-    PRIORITY_PERCENTILE,
-    interpolation="higher",
-)
-analysis_df["high_annotation_count"] = analysis_df[
+def upper_outlier_threshold(values):
+    """Return Q3 + 1.5 × IQR for one measure and model group."""
+
+    q1 = values.quantile(0.25)
+    q3 = values.quantile(0.75)
+    return q3 + 1.5 * (q3 - q1)
+
+
+count_thresholds = analysis_df.groupby("model")[
     "n_included_annotations"
-].ge(count_threshold)
-analysis_df["high_annotation_rate"] = analysis_df[
+].transform(upper_outlier_threshold)
+rate_thresholds = analysis_df.groupby("model")[
     "included_annotations_per_1000_tokens"
-].ge(rate_threshold)
-analysis_df["selected_for_review"] = (
-    analysis_df["high_annotation_count"] | analysis_df["high_annotation_rate"]
+].transform(upper_outlier_threshold)
+
+analysis_df["annotation_count_upper_outlier_threshold"] = count_thresholds
+analysis_df["annotation_rate_upper_outlier_threshold"] = rate_thresholds
+analysis_df["unusually_high_annotation_count"] = analysis_df[
+    "n_included_annotations"
+].gt(count_thresholds)
+analysis_df["unusually_high_annotation_rate"] = analysis_df[
+    "included_annotations_per_1000_tokens"
+].gt(rate_thresholds)
+analysis_df["above_either_upper_outlier_threshold"] = (
+    analysis_df["unusually_high_annotation_count"]
+    | analysis_df["unusually_high_annotation_rate"]
 )
 
 
-def describe_selection_reason(row):
-    """Describe which transparent rule placed a document in the review list."""
+def describe_outlier_reason(row):
+    """State which upper outlier threshold a document exceeds."""
 
-    if row["high_annotation_count"] and row["high_annotation_rate"]:
-        return "highest 10% by count and rate"
-    if row["high_annotation_count"]:
-        return "highest 10% by count"
-    if row["high_annotation_rate"]:
-        return "highest 10% by rate"
-    return "not selected"
+    if (
+        row["unusually_high_annotation_count"]
+        and row["unusually_high_annotation_rate"]
+    ):
+        return "count and rate"
+    if row["unusually_high_annotation_count"]:
+        return "count"
+    if row["unusually_high_annotation_rate"]:
+        return "rate"
+    return "neither"
 
 
-analysis_df["selection_reason"] = analysis_df.apply(
-    describe_selection_reason,
-    axis=1,
+analysis_df["upper_outlier_reason"] = analysis_df.apply(
+    describe_outlier_reason,
+    axis = 1,
 )
+
+# Retain the distribution statistics used to audit each model-specific
+# threshold in the completion report.
+threshold_summary_records = []
+for model, model_df in analysis_df.groupby("model", sort = True):
+    for measure, column in (
+        ("annotation count", "n_included_annotations"),
+        ("annotation rate", "included_annotations_per_1000_tokens"),
+    ):
+        values = model_df[column]
+        q1 = values.quantile(0.25)
+        q3 = values.quantile(0.75)
+        iqr = q3 - q1
+        threshold_summary_records.append(
+            {
+                "model": model,
+                "measure": measure,
+                "q1": q1,
+                "q3": q3,
+                "iqr": iqr,
+                "threshold": q3 + 1.5 * iqr,
+                "maximum": values.max(),
+            }
+        )
+threshold_summary_df = pd.DataFrame(threshold_summary_records)
 
 
 # ---------------------------------------------------------------------------
-# Replace this section's earlier outputs
+# Replace this section's earlier outputs on a re-run
 # ---------------------------------------------------------------------------
 
 if (
@@ -439,11 +465,11 @@ if SECTION_OUTPUT_DIR.exists():
     shutil.rmtree(SECTION_OUTPUT_DIR)
 
 tables_directory, figures_directory = create_output_folders(SECTION_OUTPUT_DIR)
-SECTION_README_PATH.write_text(README_TEXT, encoding="utf-8")
+SECTION_README_PATH.write_text(README_TEXT, encoding = "utf-8")
 
 
 # ---------------------------------------------------------------------------
-# Save the complete diagnostic table and shorter review list
+# Save the complete diagnostic table and upper-outlier table
 # ---------------------------------------------------------------------------
 
 diagnostic_columns = [
@@ -456,87 +482,142 @@ diagnostic_columns = [
     "n_included_annotations",
     "n_included_assignments",
     "included_annotations_per_1000_tokens",
-    "dominant_error_category",
-    "dominant_subrule",
+    "most_frequent_error_category",
+    "most_frequent_category_subrule",
     "document_family",
     "reviewed_documents_in_family",
     "repeated_document_family",
-    "high_annotation_count",
-    "high_annotation_rate",
-    "selected_for_review",
-    "selection_reason",
+    "annotation_count_upper_outlier_threshold",
+    "annotation_rate_upper_outlier_threshold",
+    "unusually_high_annotation_count",
+    "unusually_high_annotation_rate",
+    "above_either_upper_outlier_threshold",
+    "upper_outlier_reason",
 ]
 
 document_diagnostics_df = (
     analysis_df[diagnostic_columns]
     .sort_values(
-        ["included_annotations_per_1000_tokens", "n_included_annotations"],
-        ascending=[False, False],
+        ["model", "filename_stem"],
+        ascending = [True, True],
     )
-    .reset_index(drop=True)
+    .reset_index(drop = True)
 )
-document_diagnostics_df.insert(
-    0,
-    "annotation_rate_rank",
-    range(1, len(document_diagnostics_df) + 1),
-)
-
-documents_for_review_df = (
+upper_outlier_documents_df = (
     document_diagnostics_df.loc[
-        document_diagnostics_df["selected_for_review"]
+        document_diagnostics_df["above_either_upper_outlier_threshold"]
     ]
     .copy()
-    .reset_index(drop=True)
 )
 
-# Give every flagged document a short number for this run. The same number
-# appears on the scatter plot, in its adjacent document key, in the bar-chart
-# labels and in documents_for_review.csv. This is more readable than placing
-# long filenames directly beside tightly clustered scatter points.
-documents_for_review_df.insert(
-    0,
-    "review_flag_number",
-    range(1, len(documents_for_review_df) + 1),
+# Order the selected documents for prompt review. Evidence from both measures
+# comes first, followed by count-only and then rate-only evidence. Within each
+# group, larger annotation counts come first; annotation rate and filename give
+# deterministic tie-breaks. 
+review_group_order = {
+    "count and rate": 1,
+    "count": 2,
+    "rate": 3,
+}
+upper_outlier_documents_df["prompt_review_group_order"] = (
+    upper_outlier_documents_df["upper_outlier_reason"].map(review_group_order)
 )
+if upper_outlier_documents_df["prompt_review_group_order"].isna().any():
+    raise RuntimeError(
+        "Every upper-outlier document must have a prompt-review group."
+    )
+upper_outlier_documents_df = upper_outlier_documents_df.sort_values(
+    [
+        "prompt_review_group_order",
+        "n_included_annotations",
+        "included_annotations_per_1000_tokens",
+        "filename_stem",
+    ],
+    ascending = [True, False, False, True],
+).reset_index(drop = True)
+
+# Give every upper-outlier document a short review-order number. The same number
+# appears on the scatter plot, in its key, in the bar chart and in the CSV.
+upper_outlier_documents_df.insert(
+    0,
+    "document_number",
+    range(1, len(upper_outlier_documents_df) + 1),
+)
+
+# Confirm that the numbered table contains every document exceeding either
+# model-specific threshold and no document that meets neither criterion.
+expected_upper_outlier_stems = set(
+    analysis_df.loc[
+        analysis_df["n_included_annotations"].gt(
+            analysis_df["annotation_count_upper_outlier_threshold"]
+        )
+        | analysis_df["included_annotations_per_1000_tokens"].gt(
+            analysis_df["annotation_rate_upper_outlier_threshold"]
+        ),
+        "filename_stem",
+    ]
+)
+observed_upper_outlier_stems = set(
+    upper_outlier_documents_df["filename_stem"]
+)
+if observed_upper_outlier_stems != expected_upper_outlier_stems:
+    raise RuntimeError(
+        "The numbered document table does not match the model-specific upper "
+        "outlier criteria."
+    )
+if upper_outlier_documents_df["document_number"].duplicated().any():
+    raise RuntimeError("Document numbers must be unique.")
+if upper_outlier_documents_df["document_number"].tolist() != list(
+    range(1, len(upper_outlier_documents_df) + 1)
+):
+    raise RuntimeError("Document numbers must follow prompt-review order.")
 
 save_table(
     document_diagnostics_df,
     tables_directory / "document_diagnostics.csv",
 )
 save_table(
-    documents_for_review_df,
-    tables_directory / "documents_for_review.csv",
+    upper_outlier_documents_df,
+    tables_directory / "upper_outlier_documents.csv",
 )
 
 
 # ---------------------------------------------------------------------------
-# Prepare category counts for the flagged-document profile figure
+# Prepare category counts for the upper-outlier profile figure
 # ---------------------------------------------------------------------------
 
-flagged_stems = set(documents_for_review_df["filename_stem"])
-flagged_categories_df = category_annotations_df.loc[
-    category_annotations_df["filename_stem"].isin(flagged_stems)
+upper_outlier_stems = set(upper_outlier_documents_df["filename_stem"])
+upper_outlier_categories_df = category_annotations_df.loc[
+    category_annotations_df["filename_stem"].isin(upper_outlier_stems)
 ]
 category_counts_df = (
-    flagged_categories_df.groupby(
+    upper_outlier_categories_df.groupby(
         ["filename_stem", "effective_error_category"]
     )
     .size()
-    .unstack(fill_value=0)
+    .unstack(fill_value = 0)
 )
 
 category_order = (
-    category_counts_df.sum(axis=0).sort_values(ascending=False).index.tolist()
+    category_counts_df.sum(axis = 0).sort_values(ascending = False).index.tolist()
 )
-flagged_plot_order = documents_for_review_df.sort_values(
-    ["included_annotations_per_1000_tokens", "n_included_annotations"],
-    ascending=[True, True],
-)["filename_stem"].tolist()
+# Matplotlib by default draws the first horizontal bar at the bottom.
+# This reverses the sequence here so document 1 appears at the top of the chart.
+upper_outlier_plot_order = upper_outlier_documents_df.iloc[::-1][
+    "filename_stem"
+].tolist()
 category_counts_df = category_counts_df.reindex(
-    index=flagged_plot_order,
-    columns=category_order,
-    fill_value=0,
+    index = upper_outlier_plot_order,
+    columns = category_order,
+    fill_value = 0,
 )
+
+# The bar chart shows the numbered documents in the scatter.
+if set(category_counts_df.index) != observed_upper_outlier_stems:
+    raise RuntimeError(
+        "The error-category profile does not contain the same documents as "
+        "the numbered scatter plot."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -555,55 +636,54 @@ for language in OUTPUT_LANGUAGES:
     language_directory = figures_directory / language
     text = CHART_TEXT[language]
 
-    # Figure 1: show annotation burden against document length. Model colour
-    # supports comparison. Flagged documents use numbered markers connected to
-    # a complete key beside the plot, avoiding overlapping filename labels.
+    # Figure 1: compare annotation count with document length. Numbered markers
+    # identify documents above either upper outlier threshold.
     scatter_figure_height = max(
         8.5,
-        4.8 + 0.16 * len(documents_for_review_df),
+        4.8 + 0.18 * len(upper_outlier_documents_df),
     )
-    fig, ax = plt.subplots(figsize=(15, scatter_figure_height))
-    fig.subplots_adjust(top=0.72, bottom=0.14, left=0.09, right=0.69)
+    fig, ax = plt.subplots(figsize = (15, scatter_figure_height))
+    fig.subplots_adjust(top = 0.72, bottom = 0.14, left = 0.09, right = 0.69)
 
-    for model, model_df in analysis_df.groupby("model", sort=True):
+    for model, model_df in analysis_df.groupby("model", sort = True):
         ax.scatter(
             model_df["n_modernised_tokens"],
             model_df["n_included_annotations"],
-            label=str(model),
-            color=model_colours[str(model)],
-            s=42,
-            alpha=0.70,
-            edgecolor=COLOURS["panel"],
-            linewidth=0.5,
-            zorder=2,
+            label = str(model),
+            color = model_colours[str(model)],
+            s = 42,
+            alpha = 0.70,
+            edgecolor = COLOURS["panel"],
+            linewidth = 0.5,
+            zorder = 2,
         )
 
-    flagged_plot_df = documents_for_review_df.copy()
+    upper_outlier_plot_df = upper_outlier_documents_df.copy()
     ax.scatter(
-        flagged_plot_df["n_modernised_tokens"],
-        flagged_plot_df["n_included_annotations"],
-        facecolors=[
-            model_colours[str(model)] for model in flagged_plot_df["model"]
+        upper_outlier_plot_df["n_modernised_tokens"],
+        upper_outlier_plot_df["n_included_annotations"],
+        facecolors = [
+            model_colours[str(model)] for model in upper_outlier_plot_df["model"]
         ],
-        edgecolors=COLOURS["text"],
-        s=150,
-        linewidth=1.0,
-        zorder=3,
+        edgecolors = COLOURS["text"],
+        s = 150,
+        linewidth = 1.0,
+        zorder = 3,
     )
 
-    # Numbers remain legible even where several flagged documents are close
+    # Numbers remain legible even where several documents are close
     # together. Full filenames are retained in the key and output table.
-    for _, row in flagged_plot_df.iterrows():
+    for _, row in upper_outlier_plot_df.iterrows():
         ax.text(
             row["n_modernised_tokens"],
             row["n_included_annotations"],
-            str(row["review_flag_number"]),
-            fontsize=6.2,
-            fontweight="bold",
-            color=COLOURS["panel"],
-            ha="center",
-            va="center",
-            zorder=4,
+            str(row["document_number"]),
+            fontsize = 6.2,
+            fontweight = "bold",
+            color = COLOURS["panel"],
+            ha = "center",
+            va = "center",
+            zorder = 4,
         )
 
     ax.set_xlabel(text["burden"]["x_label"])
@@ -611,7 +691,7 @@ for language in OUTPUT_LANGUAGES:
     ax.grid(True)
     ax.set_axisbelow(True)
     ax.spines[["top", "right"]].set_visible(False)
-    ax.legend(frameon=False, loc="upper left")
+    ax.legend(frameon = False, loc = "upper left")
 
     # Place the complete numbered key in its own axes so no filename can fall
     # outside the plot or obscure another document. Long names are wrapped
@@ -623,41 +703,51 @@ for language in OUTPUT_LANGUAGES:
     key_ax.text(
         0.045,
         1.02,
-        "Documents flagged for closer review",
-        fontsize=9,
-        fontweight="bold",
-        color=COLOURS["text"],
-        va="bottom",
-        transform=key_ax.transAxes,
+        "Documents with unusually high counts and/or rates within each model",
+        fontsize = 9,
+        fontweight = "bold",
+        color = COLOURS["text"],
+        va = "bottom",
+        transform = key_ax.transAxes,
     )
-    key_line_height = 0.98 / max(len(flagged_plot_df), 1)
-    for key_position, (_, row) in enumerate(flagged_plot_df.iterrows()):
-        key_y_position = 0.98 - key_position * key_line_height
+    key_ax.text(
+        0.045,
+        0.995,
+        "Threshold criterion in brackets",
+        fontsize = 6.4,
+        color = COLOURS["muted_text"],
+        va = "top",
+        transform = key_ax.transAxes,
+    )
+    key_line_height = 0.94 / max(len(upper_outlier_plot_df), 1)
+    for key_position, (_, row) in enumerate(upper_outlier_plot_df.iterrows()):
+        key_y_position = 0.94 - key_position * key_line_height
 
-        # Repeat the model colour beside each filename so the key can be read
+        # Circle with model colour beside each filename so the key can be read
         # directly without tracing the numbered point back to the scatter.
         key_ax.text(
             0.015,
             key_y_position,
             "●",
-            fontsize=7,
-            color=model_colours[str(row["model"])],
-            ha="center",
-            va="top",
-            transform=key_ax.transAxes,
+            fontsize = 7,
+            color = model_colours[str(row["model"])],
+            ha = "center",
+            va = "top",
+            transform = key_ax.transAxes,
         )
         key_ax.text(
             0.045,
             key_y_position,
             fill(
-                f"{row['review_flag_number']}. {row['filename_stem']}",
-                width=43,
+                f"{row['document_number']}. {row['filename_stem']} "
+                f"({row['upper_outlier_reason']})",
+                width = 43,
             ),
-            fontsize=6.4,
-            color=COLOURS["muted_text"],
-            va="top",
-            linespacing=0.95,
-            transform=key_ax.transAxes,
+            fontsize = 6.4,
+            color = COLOURS["muted_text"],
+            va = "top",
+            linespacing = 0.95,
+            transform = key_ax.transAxes,
         )
     add_chart_header(
         fig,
@@ -668,71 +758,72 @@ for language in OUTPUT_LANGUAGES:
     )
     add_figure_note(
         fig,
-        "Document length is shown because a moderate annotation count can create a high per-1,000-token rate when the token denominator is small.",
+        "Upper outlier threshold = Q3 + 1.5 x IQR, where Q3 is the 75th percentile and IQR is the range between the 25th and 75th percentiles. Calculated separately for each model.",
     )
     save_figure(fig, language_directory, "document_length_and_annotation_burden")
 
-    # Figure 2: show which error categories make up the feedback received by
-    # each flagged document. The document, reviewer and archive are kept on one
-    # line so possible clustering is easier to scan during human inspection.
+    # Figure 2: show the error categories assigned to each numbered document.
+    # Each label keeps the document, reviewer, archive and model on one line.
     figure_height = max(8.0, 4.8 + 0.32 * len(category_counts_df))
-    fig, ax = plt.subplots(figsize=(16, figure_height))
+    fig, ax = plt.subplots(figsize = (17.5, figure_height))
 
     # The wide figure provides enough room for one-line metadata labels without
     # allowing the label column to consume nearly half of the canvas.
-    fig.subplots_adjust(top=0.72, bottom=0.14, left=0.36, right=0.95)
+    fig.subplots_adjust(top = 0.72, bottom = 0.14, left = 0.43, right = 0.96)
 
-    left_values = pd.Series(0, index=category_counts_df.index, dtype=float)
+    left_values = pd.Series(0, index = category_counts_df.index, dtype = float)
     for category_position, category in enumerate(category_order):
         values = category_counts_df[category]
         ax.barh(
             category_counts_df.index,
             values,
-            left=left_values,
-            label=category,
-            color=ERROR_CATEGORY_COLOURS[
+            left = left_values,
+            label = category,
+            color = ERROR_CATEGORY_COLOURS[
                 category_position % len(ERROR_CATEGORY_COLOURS)
             ],
-            edgecolor="none",
+            edgecolor = "none",
         )
         left_values = left_values + values
 
-    flagged_metadata = documents_for_review_df.set_index("filename_stem")
+    upper_outlier_metadata = upper_outlier_documents_df.set_index(
+        "filename_stem"
+    )
     y_labels = []
     for filename_stem in category_counts_df.index:
-        row = flagged_metadata.loc[filename_stem]
+        row = upper_outlier_metadata.loc[filename_stem]
         y_labels.append(
-            f"{row['review_flag_number']}. {filename_stem} · "
-            f"{row['reviewer_name']} · {row['archive']}"
+            f"{row['document_number']}. {filename_stem} · "
+            f"{row['reviewer_name']} · {row['archive']} · {row['model']}"
         )
 
     ax.set_yticks(range(len(category_counts_df.index)))
-    ax.set_yticklabels(y_labels, fontsize=7.5)
+    ax.set_yticklabels(y_labels, fontsize = 7.5)
 
-    # Explain the three pieces of metadata concatenated in each y-axis label.
+    # Explain the four pieces of metadata concatenated in each y-axis label.
     # This heading sits above the label column rather than inside the data area.
     fig.text(
-        0.355,
+        0.425,
         0.735,
-        "Document · reviewer · archive",
-        fontsize=8.5,
-        fontweight="bold",
-        color=COLOURS["muted_text"],
-        ha="right",
-        va="bottom",
+        "document · reviewer · archive · model",
+        fontsize = 8.5,
+        fontweight = "bold",
+        color = COLOURS["muted_text"],
+        ha = "right",
+        va = "bottom",
     )
     ax.set_xlabel(text["profiles"]["x_label"])
-    ax.grid(axis="x")
+    ax.grid(axis = "x")
     ax.set_axisbelow(True)
     ax.spines[["top", "right", "left"]].set_visible(False)
-    ax.tick_params(axis="y", length=0)
+    ax.tick_params(axis = "y", length = 0)
     ax.legend(
-        frameon=False,
-        loc="lower center",
-        bbox_to_anchor=(0.5, 0.045),
-        bbox_transform=fig.transFigure,
-        ncol=3,
-        fontsize=8,
+        frameon = False,
+        loc = "lower center",
+        bbox_to_anchor = (0.5, 0.045),
+        bbox_transform = fig.transFigure,
+        ncol = 3,
+        fontsize = 8,
     )
     add_chart_header(
         fig,
@@ -741,11 +832,11 @@ for language in OUTPUT_LANGUAGES:
             for key in ("title", "description", "measure")
         },
     )
-    add_figure_note(
+    save_figure(
         fig,
-        "Documents are flagged using count and rate thresholds, not by error category. Each label shows the document, reviewer and archive.",
+        language_directory,
+        "upper_outlier_document_error_profiles",
     )
-    save_figure(fig, language_directory, "flagged_document_error_profiles")
 
 
 # ---------------------------------------------------------------------------
@@ -754,17 +845,20 @@ for language in OUTPUT_LANGUAGES:
 
 print(f"\nReviewed documents included: {len(analysis_df)}")
 print(
-    "Documents selected for closer review: "
-    f"{len(documents_for_review_df)}"
+    "Documents above either upper outlier threshold: "
+    f"{len(upper_outlier_documents_df)}"
 )
-print(
-    "Highest-10% annotation-count threshold: "
-    f"{count_threshold:.0f} annotations"
-)
-print(
-    "Highest-10% annotation-rate threshold: "
-    f"{rate_threshold:.2f} annotations per 1,000 tokens"
-)
+print("\nModel-specific upper outlier calculations:")
+for _, row in threshold_summary_df.iterrows():
+    unit = " per 1,000 tokens" if row["measure"] == "annotation rate" else ""
+    print(
+        f"- {row['model']} · {row['measure']}: "
+        f"Q1 = {row['q1']:.2f}; "
+        f"Q3 = {row['q3']:.2f}; "
+        f"IQR = {row['iqr']:.2f}; "
+        f"threshold = {row['threshold']:.2f}; "
+        f"maximum = {row['maximum']:.2f}{unit}"
+    )
 print(f"\nTables saved to: {tables_directory}")
 print(f"Figures saved to: {figures_directory}")
 print(f"README saved to: {SECTION_README_PATH}")

@@ -1,28 +1,30 @@
-"""Compare the two modernisation models using human-review annotations.
+"""
+Description of reviewer annotation frequency for each modernisation model.
 
-This section describes how frequently reviewers marked apparent problems in
-documents modernised by each model. It does not attempt to prove that the model
-itself caused the observed difference.
+Measured by the number of distinct annotations per 1,000
+modernised tokens. Each distinct annotation is counted once, including when a
+reviewer attached more than one error-label assignment to it. An error-label
+assignment refers to one category-sub-rule combination.
 
-The primary measure is the number of distinct included annotations per 1,000
-modernised tokens. A single annotation may have more than one category or
-field assignment, but it is counted once here as one reviewer-marked error.
-
-Only documents with available annotation data and a positive modernised token
+Only documents with available annotation data and a non-zero modernised token
 count are used when calculating document-level rates. A missing annotation JSON
-is not interpreted as a document with zero errors.
+is not interpreted as a document with zero annotations.
 
-The script deliberately produces a small set of outputs:
+Outputs:
 
     analysis_outputs/01_model_comparison/MODEL_COMPARISON_README.md
     analysis_outputs/01_model_comparison/tables/model_observed_summary.csv
     analysis_outputs/01_model_comparison/figures/en/
         annotation_rate_by_model.png and .svg
 
-Statistical adjustment for archive and reviewer is deliberately postponed
-until the annotation patterns and possible reviewer effects have been examined.
-"""
+We adjust for variability in document length here by reporting annotations
+per 1,000 tokens. We are not adjusting for archive or reviewer allocation
+at this stage.
 
+"""
+# ---------------------------------------------------------------------------
+# Import the required modules
+# ---------------------------------------------------------------------------
 import os
 from pathlib import Path
 import shutil
@@ -62,22 +64,25 @@ SECTION_README_PATH = SECTION_OUTPUT_DIR / "MODEL_COMPARISON_README.md"
 
 
 # ---------------------------------------------------------------------------
-# Define the visible chart wording
+# Specify wording for charts
 # ---------------------------------------------------------------------------
 
 CHART_TEXT = {
     "en": {
         "annotation_rate": {
-            "title": "How did observed annotation rates differ by model?",
+            "title": (
+                "How frequently did reviewers annotate documents from each "
+                "model?"
+            ),
             "description": (
-                "This comparison shows the variation in reviewer-marked "
-                "errors across documents modernised by each model."
+                "Plots showing the distribution of annotation rates "
+                "for the GPT OSS 120B model (left) and the Llama 3.3 70B (right)."
             ),
             "measure": (
-                "Distinct included annotations per 1,000 modernised tokens "
+                "Plots count annotations per 1,000 modernised tokens "
                 "for each reviewed document."
             ),
-            "y_label": "Annotations per 1,000 tokens",
+            "y_label": "Distinct annotations per 1,000 tokens",
         },
     }
 }
@@ -85,17 +90,17 @@ CHART_TEXT = {
 
 README_TEXT = """# 01 · Descriptive model overview
 
-## What this section is trying to show
+## Aim of analysis
 
-This section shows what reviewers recorded for documents produced by each
-modernisation model.
+How did annotation rates very by model when measured per 1,000 tokens?
 
 The main measure is **distinct included annotations per 1,000 modernised
-tokens**. Each reviewer-marked annotation is counted once even when it has more
-than one category or field assignment.
+tokens**. Each distinct annotation is counted once, including when the reviewer
+attached more than one error-label assignment to it. An error-label assignment
+is one category-sub-rule combination.
 
 Documents with unavailable annotation data are excluded from the comparison;
-they are not treated as documents with zero errors.
+they are not treated as documents with zero annotations.
 
 ## Input
 
@@ -103,22 +108,13 @@ they are not treated as documents with zero errors.
 
 ## Table produced by this script
 
-- `model_observed_summary.csv`: reviewed documents, text length, annotation
-  totals, annotation rates and zero-annotation documents for each model.
+- `model_observed_summary.csv`: sample size, reviewed text length, distinct
+  annotation totals, error-label assignment totals, annotation rates and
+  zero-annotation documents for each model.
 
-## Figures produced by this script
+## PNG and SVG figures produced by this script
 
 - `annotation_rate_by_model`: document-level annotation rates for each model.
-
-Each figure is saved as both PNG and SVG.
-
-## Interpretation
-
-This is a descriptive comparison of human-review outcomes. A higher annotation
-rate means that reviewers marked more apparent problems; it does not yet prove
-that the model was worse. Later analysis will examine error types, reviewer
-behaviour, archive composition and annotation decisions before statistical
-modelling is undertaken.
 """
 
 
@@ -128,12 +124,12 @@ modelling is undertaken.
 
 check_required_files(
     [DOCUMENT_ANALYSIS_PATH],
-    preceding_command="python scripts/construct_tables.py",
+    preceding_command = "python scripts/construct_tables.py",
 )
 
 documents_df = pd.read_csv(
     DOCUMENT_ANALYSIS_PATH,
-    dtype={"filename_stem": "string"},
+    dtype = {"filename_stem": "string"},
 )
 
 required_columns = {
@@ -169,7 +165,7 @@ numeric_columns = [
     "included_annotations_per_1000_tokens",
 ]
 for column in numeric_columns:
-    documents_df[column] = pd.to_numeric(documents_df[column], errors="coerce")
+    documents_df[column] = pd.to_numeric(documents_df[column], errors = "coerce")
 
 
 # ---------------------------------------------------------------------------
@@ -190,7 +186,7 @@ if analysis_df.empty:
         "modernised token count."
     )
 
-if analysis_df["model"].nunique(dropna=True) != 2:
+if analysis_df["model"].nunique(dropna = True) != 2:
     raise ValueError(
         "The model comparison expects exactly two model values after documents "
         "with unavailable data are removed."
@@ -198,7 +194,7 @@ if analysis_df["model"].nunique(dropna=True) != 2:
 
 
 # ---------------------------------------------------------------------------
-# Replace this section's earlier outputs
+# On a re-run, replace only this section's previous outputs
 # ---------------------------------------------------------------------------
 
 if (
@@ -213,7 +209,7 @@ if SECTION_OUTPUT_DIR.exists():
     shutil.rmtree(SECTION_OUTPUT_DIR)
 
 tables_directory, figures_directory = create_output_folders(SECTION_OUTPUT_DIR)
-SECTION_README_PATH.write_text(README_TEXT, encoding="utf-8")
+SECTION_README_PATH.write_text(README_TEXT, encoding = "utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -222,7 +218,7 @@ SECTION_README_PATH.write_text(README_TEXT, encoding="utf-8")
 
 summary_rows = []
 
-for model, model_df in analysis_df.groupby("model", sort=True):
+for model, model_df in analysis_df.groupby("model", sort = True):
     total_tokens = model_df["n_modernised_tokens"].sum()
     total_annotations = model_df["n_included_annotations"].sum()
     total_assignments = model_df["n_included_assignments"].sum()
@@ -236,14 +232,18 @@ for model, model_df in analysis_df.groupby("model", sort=True):
             "documents_in_comparison": len(model_df),
             "modernised_tokens": int(total_tokens),
             "included_annotations": int(total_annotations),
-            "included_assignments": int(total_assignments),
+            "included_error_label_assignments": int(total_assignments),
             "pooled_annotations_per_1000_tokens": (
                 total_annotations / total_tokens * 1000
             ),
             "median_document_annotation_rate": annotation_rates.median(),
             "mean_document_annotation_rate": annotation_rates.mean(),
-            "first_quartile_document_annotation_rate": annotation_rates.quantile(0.25),
-            "third_quartile_document_annotation_rate": annotation_rates.quantile(0.75),
+            "first_quartile_document_annotation_rate": (
+                annotation_rates.quantile(0.25)
+            ),
+            "third_quartile_document_annotation_rate": (
+                annotation_rates.quantile(0.75)
+            ),
             "documents_with_zero_annotations": int(zero_annotation_documents),
             "documents_with_zero_annotations_pct": (
                 zero_annotation_documents / len(model_df) * 100
@@ -259,7 +259,7 @@ save_table(
 
 
 # ---------------------------------------------------------------------------
-# Generate one focused descriptive figure
+# Generate boxplots of distribution of annotations by model 
 # ---------------------------------------------------------------------------
 
 apply_plot_style()
@@ -288,18 +288,18 @@ for language in OUTPUT_LANGUAGES:
         for model, rates in zip(models, rate_groups)
     ]
 
-    fig, ax = plt.subplots(figsize=(10, 7.4))
-    fig.subplots_adjust(top=0.72, bottom=0.26, left=0.14, right=0.92)
+    fig, ax = plt.subplots(figsize = (10, 7.4))
+    fig.subplots_adjust(top = 0.72, bottom = 0.26, left = 0.14, right = 0.92)
 
     boxplot = ax.boxplot(
         rate_groups,
-        tick_labels=axis_labels,
-        patch_artist=True,
-        widths=0.50,
-        showfliers=False,
-        medianprops={"color": COLOURS["text"], "linewidth": 2.0},
-        whiskerprops={"color": COLOURS["muted_text"]},
-        capprops={"color": COLOURS["muted_text"]},
+        tick_labels = axis_labels,
+        patch_artist = True,
+        widths = 0.50,
+        showfliers = False,
+        medianprops = {"color": COLOURS["text"], "linewidth": 2.0},
+        whiskerprops = {"color": COLOURS["muted_text"]},
+        capprops = {"color": COLOURS["muted_text"]},
     )
 
     for patch, model in zip(boxplot["boxes"], models):
@@ -310,24 +310,24 @@ for language in OUTPUT_LANGUAGES:
     # Add every document as a lightly jittered point so the box plot does not
     # conceal the distribution or the number of observations.
     random_generator = np.random.default_rng(42)
-    for position, (model, rates) in enumerate(zip(models, rate_groups), start=1):
-        jitter = random_generator.uniform(-0.12, 0.12, size=len(rates))
+    for position, (model, rates) in enumerate(zip(models, rate_groups), start = 1):
+        jitter = random_generator.uniform(-0.12, 0.12, size = len(rates))
         ax.scatter(
             np.full(len(rates), position) + jitter,
             rates,
-            color=model_colours[model],
-            edgecolor=COLOURS["panel"],
-            linewidth=0.35,
-            s=24,
-            alpha=0.72,
-            zorder=3,
+            color = model_colours[model],
+            edgecolor = COLOURS["panel"],
+            linewidth = 0.35,
+            s = 24,
+            alpha = 0.72,
+            zorder = 3,
         )
 
     ax.set_ylabel(text["annotation_rate"]["y_label"])
-    ax.grid(axis="y")
+    ax.grid(axis = "y")
     ax.set_axisbelow(True)
     ax.spines[["top", "right"]].set_visible(False)
-    ax.tick_params(axis="x", labelrotation=0)
+    ax.tick_params(axis = "x", labelrotation = 0)
     add_chart_header(
         fig,
         **{
@@ -337,12 +337,14 @@ for language in OUTPUT_LANGUAGES:
     )
     add_figure_note(
         fig,
-        "Each point represents one document. Rates are not adjusted for archive or reviewer.",
+        (
+            ""
+        ),
     )
     save_figure(fig, language_directory, "annotation_rate_by_model")
 
 # ---------------------------------------------------------------------------
-# Print a brief completion report
+# Brief completion report
 # ---------------------------------------------------------------------------
 
 print(f"\nDocuments included in model comparison: {len(analysis_df)}")

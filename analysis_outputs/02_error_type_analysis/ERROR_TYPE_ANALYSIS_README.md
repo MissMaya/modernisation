@@ -1,13 +1,15 @@
 # 02 · Error-type analysis
 
-## What this section is trying to show
+## Aim of analysis
 
-This section identifies which types of modernisation error reviewers assigned
-most frequently and compares category-specific rates between the two models.
+To identify which error labels reviewers assigned most frequently and to show how
+the rates of annotation differed between models.
 
-Only assignments retained for analysis are used. Category totals count each
-annotation once within a category, even when it has multiple fields in that
-category. Sub-rule totals count the individual category-field assignments.
+Category totals count each annotation once per category. Category-sub-rule totals count each
+distinct label attached to an annotation. For example, if one annotation has two different 
+Abreviaturas sub-rule labels, it contributes one count to the Abreviaturas category total but 
+one count to each of the two sub-rule totals. Therefore, sub-rule totals may exceed the 
+corresponding category total.
 
 ## Inputs
 
@@ -17,23 +19,15 @@ category. Sub-rule totals count the individual category-field assignments.
 
 ## Tables produced by this script
 
-- `error_type_summary.csv`: category and sub-rule counts and rates, overall and
-  by model.
-- `subrule_priority_summary.csv`: one ranked row per sub-rule, including the
-  overall burden, documents affected and the observed rate for each model.
+- `error_type_summary.csv`: counts and rates for categories and category-sub-rule
+  labels, overall and by model.
+- `subrule_frequency_summary.csv`: category-sub-rule labels ranked by frequency,
+  with document counts and model-specific rates.
 
 ## Figures produced by this script
 
-- `error_category_rates_by_model`: category-specific annotation rates for the
-  two models.
-- `priority_subrule_rates_by_model`: model-specific rates for the sub-rules that
-  together account for at least 80% of included assignments. Sub-rules tied at
-  the cutoff are retained.
-
-Each figure is saved as both PNG and SVG.
-
-## Interpretation
-
-The figures describe categories and sub-rules assigned by reviewers. They do not show
-how many opportunities each model had to apply each individual modernisation
-rule, and they do not yet adjust for archive or reviewer effects.
+- `error_category_rates_by_model`: category-specific annotation rates by model.
+- `frequent_error_label_rates_by_model`: model-specific rates for the smallest
+  set of category-sub-rule labels accounting for at least 80% of included
+  assignments. The 80% cutoff is used only to keep the figure readable; the
+  CSV contains every label. Labels tied at the cutoff are retained.

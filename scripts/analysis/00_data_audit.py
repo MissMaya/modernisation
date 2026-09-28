@@ -62,7 +62,7 @@ CHART_TEXT = {
         "model_exposure": {
             "title": "How much of the modernised text came from each model?",
             "description": (
-                "This chart shows the document and token-level split"
+                "This chart shows the document and token-level split "
                 "between the two models."
             ),
             "measure": (
@@ -120,7 +120,7 @@ zero errors.
 - `documents_requiring_attention.csv`: documents with unavailable data or
   excluded annotation assignments.
 
-## Figures produced by this script
+## PNG and SVG figures produced by this script
 
 - `model_sample_and_token_exposure`: reviewed document and token exposure for
   each model.
@@ -652,7 +652,7 @@ for language in OUTPUT_LANGUAGES:
 
 
 # ---------------------------------------------------------------------------
-# Brief completion report for Stage 0 
+# Brief completion report
 # ---------------------------------------------------------------------------
 
 print(f"\nSample documents audited: {len(documents_df)}")

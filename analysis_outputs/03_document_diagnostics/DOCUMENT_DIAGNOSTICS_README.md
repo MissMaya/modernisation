@@ -1,33 +1,41 @@
 # 03 · Document diagnostics
 
-## What this section is trying to show
+## Aim of analysis
 
-This section identifies the individual documents behind the model- and
-error-type patterns reported in Sections 1 and 2.
+To examine annotation count in relation to document length and identify
+documents with unusually high annotation counts or annotation rates.
 
-It distinguishes between documents with many annotations and documents with a
+It anlayses both documents with many annotations and documents with a
 high annotation rate. This matters because a short document can have a high
 rate per 1,000 tokens even when its absolute annotation count is moderate.
 
-## How documents are selected for closer review
+## Upper outlier thresholds
 
-`documents_for_review.csv` contains documents in the highest 10% for either:
+`upper_outlier_documents.csv` contains documents exceeding the upper outlier
+threshold for either:
 
 - distinct included annotation count; or
 - distinct included annotations per 1,000 modernised tokens.
 
-The table shows which criterion selected each document and retains its
-modernised token count. Document length should be considered when interpreting
-high rates because a moderate annotation count divided by a small number of
-tokens can produce a high rate per 1,000 tokens. No separate short-document
-cutoff is imposed.
+The upper outlier threshold is Q3 + 1.5 x IQR, where Q3 is the 75th percentile
+and IQR is the range between the 25th and 75th percentiles. It is calculated
+separately for each measure and model.
 
-## Document-family rule
+These thresholds identify documents that are unusual relative to other
+documents produced by the same model. 
 
-The family identifier is created by removing only a final suffix of the form
-`_duplicated_<number>` from `filename_stem`. All other stems remain unchanged.
-The table states whether a document belongs to a family represented more than
-once in the reviewed sample.
+The numbered documents are ordered to try to flag the most useful to look at for 
+prompt refinement. Documents exceeding both count and rate thresholds come first, 
+followed by count-only and then rate-only outliers.
+Within each group, documents are ordered by annotation count and then annotation
+rate, both descending. This puts evidence supported by both measures first and
+places rate-only cases, which can be affected by short documents, last. The
+numbers indicate review order, not model performance.
+
+`document_diagnostics.csv` contains one row for every document plotted in the
+scatter plot. It reports the model, document length, annotation count,
+annotation rate, model-specific thresholds and whether each document exceeds
+the count threshold, the rate threshold, both or neither.
 
 ## Inputs
 
@@ -37,22 +45,15 @@ once in the reviewed sample.
 ## Tables produced by this script
 
 - `document_diagnostics.csv`: all reviewed documents, with annotation burden,
-  document context and dominant error types.
-- `documents_for_review.csv`: the shorter list selected by the two highest-10%
-  criteria described above.
+  document context and the most frequently assigned error category and
+  category-sub-rule. Repeated-document family fields are retained for later
+  analysis.
+- `upper_outlier_documents.csv`: documents exceeding either upper outlier
+  threshold, with the criterion recorded.
 
 ## Figures produced by this script
 
 - `document_length_and_annotation_burden`: annotation counts against document
-  length, with numbered flagged documents identified in an adjacent key.
-- `flagged_document_error_profiles`: category composition for the documents
-  flagged for closer review.
-
-Each figure is saved as both PNG and SVG.
-
-## Interpretation
-
-These are diagnostic outputs, not model rankings. Archive, reviewer, error
-type, length and repeated-family membership are retained so that apparent
-model failures can be checked for recurring textual patterns or human-review
-effects in the following analyses.
+  length, with numbered upper outliers identified in an adjacent key.
+- `upper_outlier_document_error_profiles`: category composition for the same
+  numbered documents.

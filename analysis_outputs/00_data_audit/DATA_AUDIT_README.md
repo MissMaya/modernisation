@@ -32,7 +32,7 @@ zero errors.
 - `documents_requiring_attention.csv`: documents with unavailable data or
   excluded annotation assignments.
 
-## Figures produced by this script
+## PNG and SVG figures produced by this script
 
 - `model_sample_and_token_exposure`: reviewed document and token exposure for
   each model.
