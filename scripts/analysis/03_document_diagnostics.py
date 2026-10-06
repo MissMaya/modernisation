@@ -74,12 +74,11 @@ CHART_TEXT = {
         "burden": {
             "title": "How did annotation count vary with document length?",
             "description": (
-                "Annotation count is plotted against document length for all "
-                "reviewed documents."
+                "Scatter plot of annotation count against document length. "
             ),
             "measure": (
                 "Numbered documents are those that exceed the model-specific upper outlier  "
-                "threshold for annotation count and/or annotation rate."
+                "threshold for annotation count and/or annotation rate (see interpretation slide)."
             ),
             "x_label": "Document length (modernised tokens)",
             "y_label": "Distinct reviewer annotations",
@@ -87,11 +86,11 @@ CHART_TEXT = {
         "profiles": {
             "title": (
                 "Which error categories were assigned to the numbered documents on the "
-                "scatterplot?"
+                "scatter plot?"
             ),
             "description": (
-                "The chart shows the error-category composition of reviewer "
-                "feedback for the numbered documents in the preceding "
+                "Bar chart showing the composition of reviewer-assigned error categories "
+                "for the numbered documents in the preceding "
                 "scatter plot."
             ),
             "measure": (
@@ -764,12 +763,11 @@ for language in OUTPUT_LANGUAGES:
 
     # Figure 2: show the error categories assigned to each numbered document.
     # Each label keeps the document, reviewer, archive and model on one line.
-    figure_height = max(8.0, 4.8 + 0.32 * len(category_counts_df))
-    fig, ax = plt.subplots(figsize = (17.5, figure_height))
+    fig, ax = plt.subplots(figsize = (12, 7.2))
 
-    # The wide figure provides enough room for one-line metadata labels without
-    # allowing the label column to consume nearly half of the canvas.
-    fig.subplots_adjust(top = 0.72, bottom = 0.14, left = 0.43, right = 0.96)
+    # Use the standard presentation canvas. The plotting panel begins after
+    # the one-line metadata labels, whose left edge follows the shared margin.
+    fig.subplots_adjust(top = 0.70, bottom = 0.16, left = 0.46, right = 0.94)
 
     left_values = pd.Series(0, index = category_counts_df.index, dtype = float)
     for category_position, category in enumerate(category_order):
@@ -798,18 +796,23 @@ for language in OUTPUT_LANGUAGES:
         )
 
     ax.set_yticks(range(len(category_counts_df.index)))
-    ax.set_yticklabels(y_labels, fontsize = 7.5)
+    ax.set_yticklabels(y_labels, fontsize = 6.2)
+    y_label_x = (0.08 - ax.get_position().x0) / ax.get_position().width
+    for label in ax.get_yticklabels():
+        label.set_x(y_label_x)
+        label.set_horizontalalignment("left")
+        label.set_multialignment("left")
 
     # Explain the four pieces of metadata concatenated in each y-axis label.
     # This heading sits above the label column rather than inside the data area.
     fig.text(
-        0.425,
-        0.735,
+        0.08,
+        0.715,
         "document · reviewer · archive · model",
         fontsize = 8.5,
         fontweight = "bold",
         color = COLOURS["muted_text"],
-        ha = "right",
+        ha = "left",
         va = "bottom",
     )
     ax.set_xlabel(text["profiles"]["x_label"])
@@ -832,6 +835,22 @@ for language in OUTPUT_LANGUAGES:
             for key in ("title", "description", "measure")
         },
     )
+    profile_header_positions = {
+        fill(text["profiles"]["title"], width = 72): 0.965,
+        fill(text["profiles"]["description"], width = 105): 0.875,
+        fill(text["profiles"]["measure"], width = 110): 0.810,
+    }
+    for text_artist in fig.texts:
+        header_y = profile_header_positions.get(text_artist.get_text())
+        if header_y is not None:
+            text_artist.set_y(header_y)
+            if text_artist.get_text() == fill(
+                text["profiles"]["title"], width = 72
+            ):
+                text_artist.set_fontsize(17)
+    for artist in fig.artists:
+        if isinstance(artist, plt.Line2D):
+            artist.set_ydata([0.765, 0.765])
     save_figure(
         fig,
         language_directory,

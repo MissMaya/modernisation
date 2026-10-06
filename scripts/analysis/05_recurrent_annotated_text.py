@@ -1,25 +1,27 @@
-"""Identify repeatedly annotated words and phrases for prompt review.
+"""
+Identify repeatedly annotated words and phrases.
 
-An annotated text span is recurrent when the same conservatively normalised
-text occurs in at least two reviewed documents and at least two reviewer
-packets. Recurrence is assessed across both models because model allocation
-was unequal.
+This script classifes an annotated text span as recurrent when 
+the same conservatively normalised text occurs in at least two reviewed 
+documents and in at least two reviewer packets. 
 
-Normalisation applies Unicode NFC, collapses whitespace, trims and case-folds.
-It does not remove accents or punctuation, stem, lemmatise, split phrases or
-combine spelling variants. One annotation is identified by document,
-annotation ID and normalised text. Repeated rows created by multiple error
-labels therefore do not inflate the annotation count.
+The normalisation process applies Unicode NFC, collapses whitespace, 
+trims and case-folds. It does not remove accents or punctuation, stem, 
+lemmatise, split phrases or combine spelling variants. 
+
+A single annotation is identified by document, annotation ID and normalised text. 
+Repeated rows created by multiple error labels therefore do not inflate 
+the annotation count.
 
 For each span, the script reports every reviewer-assigned error label. It also
 reports the most frequently assigned label, its observed coverage and the 95%
-Wilson lower confidence bound for that coverage. These values describe label
+Wilson lower confidence bound for that coverage. These values just describe label
 consistency; they do not prove that reviewers were correct or that either model
 failed.
 
-Outputs are three CSVs, a 10-span summary figure and a complete alphabetically
-paginated visual dictionary. The ten-span limit affects only the summary
-figure; every recurrent span remains in the tables and dictionary.
+Outputs are three CSVs, a 10-span summary figure and a complete visual dictionary
+of all repeatedly annotated texts. A ten-span limit is used to construct a one page 
+chart to act as a summary. Every recurrent span remains in the tables and dictionary.
 """
 
 import math
@@ -34,15 +36,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+# ---------------------------------------------------------------------------
+# Import required modules
+# ---------------------------------------------------------------------------
 from analysis_utils import (
-    COLOURS, OUTPUT_LANGUAGES, add_chart_header, add_figure_note,
+    COLOURS, OUTPUT_LANGUAGES, add_chart_header,
     apply_plot_style, check_required_files, coerce_boolean,
     create_output_folders, model_colour_map, save_figure, save_table,
 )
 
 
 # ---------------------------------------------------------------------------
-# Paths and analytical rules
+# Set up paths and rules for the analysis
 # ---------------------------------------------------------------------------
 
 PROJECT_DIR = Path(os.environ.get(
@@ -57,34 +62,33 @@ SECTION_README_PATH = SECTION_OUTPUT_DIR / "RECURRENT_ANNOTATED_TEXT_README.md"
 MIN_DOCUMENTS = 2
 MIN_REVIEWER_PACKETS = 2
 SUMMARY_SPAN_LIMIT = 10
-DICTIONARY_ROWS_PER_PAGE = 20
+DICTIONARY_ROWS_PER_PAGE = 15
 WILSON_Z_95 = 1.959963984540054
 NO_SUBRULE_LABEL = "No sub-rule assigned"
 
 CHART_TEXT = {
     "en": {
         "summary_title": (
-            "Which repeatedly annotated words or phrases were annotated most "
-            "frequently?"
+            "Which text spans did reviewers annotate most frequently? "
         ),
         "summary_description": (
-            "The chart shows the ten recurrent text spans with the largest "
+            "Chart shows the ten recurrent text spans with the largest "
             "numbers of distinct reviewer annotations."
         ),
         "summary_measure": (
-            "Spans are ordered from the largest annotation count to the "
-            "smallest."
+            "To be considered recurrent, a piece of text must occur in at least two documents and two reviewer "
+            "packets. The chart orders texts in descending order of annotation frequency. "
         ),
         "dictionary_title": (
-            "Which repeatedly annotated words or phrases could inform the prompt?"
+            "Dictionary of repeatedly annotated text spans "
         ),
         "dictionary_description": (
-            "The complete visual dictionary pairs every recurrent text span with "
-            "the error label reviewers assigned to it most frequently."
+            "These charts form a complete visual dictionary of all recurrent text spans "
+            "and the error label reviewers assigned most frequently to each."
         ),
         "dictionary_measure": (
-            "Every span occurred in at least two documents and two reviewer "
-            "packets. Pages are alphabetical."
+            "To be considered recurrent, a piece of text must occur in at least two documents and two reviewer "
+            "packets. "
         ),
         "x_label": "Distinct reviewer annotations",
     }
@@ -94,80 +98,65 @@ README_TEXT = f"""# 05 · Recurrently annotated words and phrases
 
 ## Purpose
 
-Identify words and phrases repeatedly marked by reviewers and report the error
-labels attached to them. These spans provide evidence for prompt review; they
-do not automatically represent genuine model errors.
+Identify the words and phrases repeatedly marked by reviewers and the associated 
+error labels. 
 
-## Recurrence rule
+## What counts as a recurrent text span?
 
 A text span is **recurrent** when the same conservatively normalised text occurs
 in at least {MIN_DOCUMENTS} reviewed documents and at least {MIN_REVIEWER_PACKETS}
-reviewer packets. Recurrence is assessed across both models because model
-allocation was unequal.
+reviewer packets. We assess recurrence separately across both models because models.
 
 Normalisation uses Unicode NFC, collapses whitespace, trims and case-folds. It
 does not remove accents or punctuation, stem or lemmatise, split phrases, or
-merge spelling variants. One annotation is identified by document, annotation
+merge spelling variants. A single annotation is identified by document, annotation
 ID and normalised text, so multiple labels attached to one annotation do not
 inflate the annotation count. Missing or empty annotated text is excluded.
 
-Archives, models and annotation volume are reported as evidence, not entry
-thresholds. There is no archive minimum, annotation minimum, per-model
-recurrence requirement or cumulative-coverage cutoff.
 
 ## Label consistency
 
-An error label is the category–sub-rule combination assigned by a reviewer.
+An error label is the category-sub-rule combination assigned by a reviewer.
 The most frequently assigned label is the one attached to the largest number
-of distinct annotations of that span. Jointly most frequent labels are all
-reported rather than resolving a tie alphabetically. Observed coverage is the
-proportion of the span's annotations carrying a most frequent label. The 95%
-Wilson lower bound is the lower end of a confidence interval for that
-proportion: it reduces when
-the evidence is sparse and rises when the same label is repeatedly assigned.
+of distinct annotations of that span. If labels are tied in frequency, they are all
+reported. 
 
-Labels are not assumed to be mutually exclusive. If one annotation has several
-different labels, each is retained and reported separately. These measures
-describe reviewer-label consistency. They do not establish reviewer correctness
-or a genuine model failure.
+Observed coverage is the proportion of the span's annotations carrying a most frequent label. 
+The 95% Wilson lower bound is the lower end of a confidence interval for that proportion: 
+it reduces when the evidence is sparse and rises when the same label is repeatedly assigned.
+
+If one annotation has several different labels, each is retained and reported separately. 
+These measures describe reviewer-label consistency. They do not establish  whether
+reviewers annotated correctly or whether a model genuinely failed.
 
 ## Outputs
 
 - `annotated_text_summary.csv`: every non-empty annotated word or phrase,
   recurrence status, evidence breadth, label measures and model split.
-- `recurrent_annotated_text.csv`: every recurrent span in annotation-frequency
-  order.
+- `recurrent_annotated_text.csv`: every recurrent span in order of annotation
+  frequency.
 - `annotated_text_evidence.csv`: every individual annotation and error-label
-  assignment, including the recurrence flag. It deliberately excludes
-  unverified context reconstruction.
+  assignment, including the recurrence flag. 
 - `recurrent_annotated_text_top_10`: the ten recurrent spans with the largest
   numbers of distinct annotations.
-- `recurrent_annotated_text_index_*`: every recurrent span, alphabetical and
-  paginated at up to {DICTIONARY_ROWS_PER_PAGE} rows for readability. Each
-  filename records the first and last span on that page.
+- `recurrent_annotated_text_index_*`: every recurrent span in alphabetical 
+  order. Displayed as up to {DICTIONARY_ROWS_PER_PAGE} rows for readability. 
+  Each filename records the first and last span on that page.
 
 ## Ranking
 
 The summary and recurrent-span CSV are ordered by distinct annotations, then
 affected documents, reviewer packets, archives and the Wilson lower bound for
-the most frequently assigned label. No weighted score is used. The first ten
-rows appear in the summary figure; this is a presentation limit, not an
-inclusion threshold.
-
-## Caution
-
-Validate examples before revising a prompt. Context is not reconstructed here:
-annotation offsets must first be verified against the modernised text. Verified
-modernised/source context belongs in the next stage.
+the most frequently assigned label. The first ten rows appear in the summary 
+figure (ten is just a number chosen for readability on a single page.)
 """
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 def normalise_annotated_text(value):
-    """Normalise conservatively without changing linguistic content."""
+    """Conservative normalisation"""
     if pd.isna(value):
         return pd.NA
     text = unicodedata.normalize("NFC", str(value))
@@ -188,20 +177,24 @@ def join_unique(values, limit = None):
     return " | ".join(result)
 
 
-def safe_slug(value):
-    slug = re.sub(r"[^a-z0-9]+", "_", str(value).casefold()).strip("_")
-    return slug or "unknown_model"
+def safe_identifier(value):
+    identifier = re.sub(
+        r"[^a-z0-9]+", "_", str(value).casefold()
+    ).strip("_")
+    return identifier or "unknown_model"
 
 
-def filename_slug(value):
+def filename_fragment(value):
     """Return an ASCII filename fragment without changing analytical text."""
     ascii_value = (
         unicodedata.normalize("NFKD", str(value))
         .encode("ascii", "ignore")
         .decode("ascii")
     )
-    slug = re.sub(r"[^a-z0-9]+", "_", ascii_value.casefold()).strip("_")
-    return slug or "unnamed"
+    fragment = re.sub(
+        r"[^a-z0-9]+", "_", ascii_value.casefold()
+    ).strip("_")
+    return fragment or "unnamed"
 
 
 def wrap_error_label(value, width = 90):
@@ -239,7 +232,7 @@ def wilson_lower_bound(successes, trials, z = WILSON_Z_95):
 def add_model_columns(summary, annotations, models):
     result = summary.copy()
     for model in models:
-        slug = safe_slug(model)
+        model_identifier = safe_identifier(model)
         counts = (
             annotations.loc[annotations["model"].eq(model)]
             .groupby("normalised_annotated_text", dropna = False)
@@ -250,27 +243,28 @@ def add_model_columns(summary, annotations, models):
         )
         result = result.merge(
             counts.rename(columns = {
-                "annotations": f"{slug}_annotations",
-                "documents": f"{slug}_documents",
+                "annotations": f"{model_identifier}_annotations",
+                "documents": f"{model_identifier}_documents",
             }),
             left_on = "normalised_annotated_text", right_index = True,
             how = "left", validate = "one_to_one",
         )
         for suffix in ("annotations", "documents"):
-            column = f"{slug}_{suffix}"
+            column = f"{model_identifier}_{suffix}"
             result[column] = result[column].fillna(0).astype(int)
     return result
 
 
 def draw_span_chart(frame, models, colours, title, description, measure,
-                    output_directory, filename_stem, panel_title):
+                    output_directory, filename_stem, panel_title,
+                    description_y = 0.900, measure_y = 0.830):
     """Draw a text index and model bars in separate, aligned panels."""
     display = frame.iloc[::-1].reset_index(drop = True)
     row_count = len(display)
-    fig = plt.figure(figsize = (17.5, max(10.5, 6.1 + row_count * 0.48)))
+    fig = plt.figure(figsize = (12, 7.2))
     grid = fig.add_gridspec(
         nrows = 1, ncols = 3, width_ratios = [0.38, 0.95, 1.02],
-        left = 0.06, right = 0.96, bottom = 0.14, top = 0.74,
+        left = 0.06, right = 0.96, bottom = 0.17, top = 0.73,
         wspace = 0.015,
     )
     span_ax = fig.add_subplot(grid[0, 0])
@@ -282,9 +276,9 @@ def draw_span_chart(frame, models, colours, title, description, measure,
     maximum = 0
 
     for position, model in enumerate(models):
-        slug = safe_slug(model)
-        counts = display[f"{slug}_annotations"].to_numpy()
-        documents = display[f"{slug}_documents"].to_numpy()
+        model_identifier = safe_identifier(model)
+        counts = display[f"{model_identifier}_annotations"].to_numpy()
+        documents = display[f"{model_identifier}_documents"].to_numpy()
         maximum = max(maximum, int(counts.max()) if len(counts) else 0)
         offsets = (y_positions - group_height / 2 + bar_height / 2
                    + position * bar_height)
@@ -305,8 +299,12 @@ def draw_span_chart(frame, models, colours, title, description, measure,
         text_axis.set_xlim(0, 1)
         text_axis.set_ylim(-0.5, row_count - 0.5)
         text_axis.axis("off")
+    span_text_x = (
+        (0.08 - span_ax.get_position().x0) / span_ax.get_position().width
+    )
     span_ax.text(
-        0.14, 1.015, "Annotated word or phrase", transform = span_ax.transAxes,
+        span_text_x, 1.015, "Annotated text",
+        transform = span_ax.transAxes,
         ha = "left", va = "bottom", fontsize = 8.2, fontweight = "bold",
         color = COLOURS["text"], clip_on = False,
     )
@@ -318,7 +316,7 @@ def draw_span_chart(frame, models, colours, title, description, measure,
     )
     for y_position, row in zip(y_positions, display.itertuples(index = False)):
         span_ax.text(
-            0.14, y_position,
+            span_text_x, y_position,
             wrap_annotated_text(row.normalised_annotated_text),
             transform = span_ax.get_yaxis_transform(), ha = "left", va = "center",
             fontsize = 7.4, fontweight = "bold", fontstyle = "italic",
@@ -344,18 +342,25 @@ def draw_span_chart(frame, models, colours, title, description, measure,
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(
         handles, labels, frameon = False, loc = "lower center",
-        bbox_to_anchor = (0.5, 0.065), ncol = max(1, len(models)),
+        bbox_to_anchor = (0.5, 0.035), ncol = max(1, len(models)),
     )
     add_chart_header(fig, title = title, description = description, measure = measure)
-    add_figure_note(
-        fig,
-        "Bold italics identify the annotated text. The adjacent text gives its most frequently assigned error label, or tied labels. Bar labels show annotations and affected documents. Model bars locate the evidence; they are not exposure-adjusted performance rates.",
-    )
+    if description_y is not None:
+        wrapped_description = textwrap.fill(description, width = 105)
+        for text_artist in fig.texts:
+            if text_artist.get_text() == wrapped_description:
+                text_artist.set_y(description_y)
+                break
+    wrapped_measure = textwrap.fill(measure, width = 110)
+    for text_artist in fig.texts:
+        if text_artist.get_text() == wrapped_measure:
+            text_artist.set_y(measure_y)
+            break
     save_figure(fig, output_directory, filename_stem)
 
 
 # ---------------------------------------------------------------------------
-# Load and validate assembled tables
+# Load and validate pre-assembled tables
 # ---------------------------------------------------------------------------
 
 check_required_files(
@@ -518,7 +523,7 @@ all_error_labels_df = (
 )
 
 # Count the number of distinct rules attached to each original annotation.
-# This preserves multi-label evidence without counting the marked span twice.
+# This preserves the multiple labels without counting the marked span twice.
 annotation_error_label_counts_df = (
     error_label_assignments_df.groupby(span_identity, dropna = False)
     .size().rename("error_labels_on_annotation").reset_index()
@@ -579,7 +584,7 @@ recurrent_spans_df = span_summary_df.loc[
 
 
 # ---------------------------------------------------------------------------
-# Preserve individual evidence without trusting unverified text offsets
+# Preserve the individual annotations
 # ---------------------------------------------------------------------------
 
 summary_fields = [
@@ -614,7 +619,7 @@ examples_df = error_label_assignments_df[example_columns].merge(
 
 
 # ---------------------------------------------------------------------------
-# Replace this stage's outputs and save tables
+# Replace this stage's outputs and save tables on a re-run
 # ---------------------------------------------------------------------------
 
 if (SECTION_OUTPUT_DIR.name != "05_recurrent_annotated_text"
@@ -633,7 +638,7 @@ save_table(examples_df, tables_directory / "annotated_text_evidence.csv")
 
 
 # ---------------------------------------------------------------------------
-# Create the 10-span summary and complete alphabetical dictionary
+# Create the 10-span summary and the complete dictionary
 # ---------------------------------------------------------------------------
 
 if recurrent_spans_df.empty:
@@ -652,6 +657,7 @@ else:
             text["summary_measure"], language_directory,
             "recurrent_annotated_text_top_10",
             "Ten most frequently annotated spans",
+            measure_y = 0.850,
         )
 
         alphabetical_df = recurrent_spans_df.sort_values(
@@ -664,9 +670,9 @@ else:
             page_df = alphabetical_df.iloc[start:start + DICTIONARY_ROWS_PER_PAGE]
             first_span = page_df.iloc[0]["normalised_annotated_text"]
             last_span = page_df.iloc[-1]["normalised_annotated_text"]
-            first_span_slug = filename_slug(first_span)
-            last_span_slug = filename_slug(last_span)
-            span_range = f"{first_span_slug}_to_{last_span_slug}"
+            first_span_fragment = filename_fragment(first_span)
+            last_span_fragment = filename_fragment(last_span)
+            span_range = f"{first_span_fragment}_to_{last_span_fragment}"
             draw_span_chart(
                 page_df, models, colours, text["dictionary_title"],
                 text["dictionary_description"], text["dictionary_measure"],

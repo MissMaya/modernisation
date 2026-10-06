@@ -494,8 +494,8 @@ reviewer_packet_pivot = (
     .sort_index()
 )
 
-# Add a short reviewer identifier beneath each packet number to make
-# packet identification easier
+# Add the reviewer name beneath each packet number to make packet
+# identification easier.
 reviewer_labels = (
     reviewer_model_plot_df[["reviewer_packet", "reviewer_name"]]
     .drop_duplicates()
@@ -589,8 +589,10 @@ for language in OUTPUT_LANGUAGES:
     save_figure(fig, language_directory, "model_sample_and_token_exposure")
 
     # Figure 2 model allocation by reviewer
-    fig, ax = plt.subplots(figsize = (11, 7.4))
-    fig.subplots_adjust(top = 0.72, bottom = 0.20, left = 0.10, right = 0.92)
+    # Use the same canvas and horizontal margins as Figure 1 so that the
+    # chart header aligns consistently when the figures are placed in slides.
+    fig, ax = plt.subplots(figsize = (12, 7.2))
+    fig.subplots_adjust(top = 0.72, bottom = 0.20, left = 0.10, right = 0.94)
     packet_totals = reviewer_packet_pivot.sum(axis = 1)
     reviewer_packet_percentages = reviewer_packet_pivot.div(
         packet_totals.replace(0, pd.NA),
@@ -613,8 +615,7 @@ for language in OUTPUT_LANGUAGES:
     packet_axis_labels = []
     for packet in reviewer_packet_percentages.index:
         reviewer_name = str(reviewer_labels.get(packet, ""))
-        short_name = reviewer_name[:4]
-        packet_axis_labels.append(f"{packet}\n({short_name})")
+        packet_axis_labels.append(f"{packet}\n({reviewer_name})")
 
     ax.set_xticks(range(len(packet_axis_labels)))
     ax.set_xticklabels(packet_axis_labels)

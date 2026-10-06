@@ -76,7 +76,7 @@ CHART_TEXT = {
             ),
             "description": (
                 "Plots showing the distribution of annotation rates "
-                "for the GPT OSS 120B model (left) and the Llama 3.3 70B (right)."
+                "for the GPT OSS 120B model (left) and the Llama 3.3 70B model (right)."
             ),
             "measure": (
                 "Plots count annotations per 1,000 modernised tokens "
@@ -288,8 +288,8 @@ for language in OUTPUT_LANGUAGES:
         for model, rates in zip(models, rate_groups)
     ]
 
-    fig, ax = plt.subplots(figsize = (10, 7.4))
-    fig.subplots_adjust(top = 0.72, bottom = 0.26, left = 0.14, right = 0.92)
+    fig, ax = plt.subplots(figsize = (12, 7.2))
+    fig.subplots_adjust(top = 0.72, bottom = 0.26, left = 0.10, right = 0.94)
 
     boxplot = ax.boxplot(
         rate_groups,
@@ -305,7 +305,7 @@ for language in OUTPUT_LANGUAGES:
     for patch, model in zip(boxplot["boxes"], models):
         patch.set_facecolor(model_colours[model])
         patch.set_edgecolor("none")
-        patch.set_alpha(0.72)
+        patch.set_alpha(0.85)
 
     # Add every document as a lightly jittered point so the box plot does not
     # conceal the distribution or the number of observations.
@@ -319,7 +319,7 @@ for language in OUTPUT_LANGUAGES:
             edgecolor = COLOURS["panel"],
             linewidth = 0.35,
             s = 24,
-            alpha = 0.72,
+            alpha = 0.85,
             zorder = 3,
         )
 

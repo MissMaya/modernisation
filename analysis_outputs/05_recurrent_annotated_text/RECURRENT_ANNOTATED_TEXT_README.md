@@ -2,68 +2,54 @@
 
 ## Purpose
 
-Identify words and phrases repeatedly marked by reviewers and report the error
-labels attached to them. These spans provide evidence for prompt review; they
-do not automatically represent genuine model errors.
+Identify the words and phrases repeatedly marked by reviewers and the associated 
+error labels. 
 
-## Recurrence rule
+## What counts as a recurrent text span?
 
 A text span is **recurrent** when the same conservatively normalised text occurs
 in at least 2 reviewed documents and at least 2
-reviewer packets. Recurrence is assessed across both models because model
-allocation was unequal.
+reviewer packets. We assess recurrence separately across both models because models.
 
 Normalisation uses Unicode NFC, collapses whitespace, trims and case-folds. It
 does not remove accents or punctuation, stem or lemmatise, split phrases, or
-merge spelling variants. One annotation is identified by document, annotation
+merge spelling variants. A single annotation is identified by document, annotation
 ID and normalised text, so multiple labels attached to one annotation do not
 inflate the annotation count. Missing or empty annotated text is excluded.
 
-Archives, models and annotation volume are reported as evidence, not entry
-thresholds. There is no archive minimum, annotation minimum, per-model
-recurrence requirement or cumulative-coverage cutoff.
 
 ## Label consistency
 
-An error label is the category–sub-rule combination assigned by a reviewer.
+An error label is the category-sub-rule combination assigned by a reviewer.
 The most frequently assigned label is the one attached to the largest number
-of distinct annotations of that span. Jointly most frequent labels are all
-reported rather than resolving a tie alphabetically. Observed coverage is the
-proportion of the span's annotations carrying a most frequent label. The 95%
-Wilson lower bound is the lower end of a confidence interval for that
-proportion: it reduces when
-the evidence is sparse and rises when the same label is repeatedly assigned.
+of distinct annotations of that span. If labels are tied in frequency, they are all
+reported. 
 
-Labels are not assumed to be mutually exclusive. If one annotation has several
-different labels, each is retained and reported separately. These measures
-describe reviewer-label consistency. They do not establish reviewer correctness
-or a genuine model failure.
+Observed coverage is the proportion of the span's annotations carrying a most frequent label. 
+The 95% Wilson lower bound is the lower end of a confidence interval for that proportion: 
+it reduces when the evidence is sparse and rises when the same label is repeatedly assigned.
+
+If one annotation has several different labels, each is retained and reported separately. 
+These measures describe reviewer-label consistency. They do not establish  whether
+reviewers annotated correctly or whether a model genuinely failed.
 
 ## Outputs
 
 - `annotated_text_summary.csv`: every non-empty annotated word or phrase,
   recurrence status, evidence breadth, label measures and model split.
-- `recurrent_annotated_text.csv`: every recurrent span in annotation-frequency
-  order.
+- `recurrent_annotated_text.csv`: every recurrent span in order of annotation
+  frequency.
 - `annotated_text_evidence.csv`: every individual annotation and error-label
-  assignment, including the recurrence flag. It deliberately excludes
-  unverified context reconstruction.
+  assignment, including the recurrence flag. 
 - `recurrent_annotated_text_top_10`: the ten recurrent spans with the largest
   numbers of distinct annotations.
-- `recurrent_annotated_text_index_*`: every recurrent span, alphabetical and
-  paginated at up to 20 rows for readability. Each
-  filename records the first and last span on that page.
+- `recurrent_annotated_text_index_*`: every recurrent span in alphabetical 
+  order. Displayed as up to 15 rows for readability. 
+  Each filename records the first and last span on that page.
 
 ## Ranking
 
 The summary and recurrent-span CSV are ordered by distinct annotations, then
 affected documents, reviewer packets, archives and the Wilson lower bound for
-the most frequently assigned label. No weighted score is used. The first ten
-rows appear in the summary figure; this is a presentation limit, not an
-inclusion threshold.
-
-## Caution
-
-Validate examples before revising a prompt. Context is not reconstructed here:
-annotation offsets must first be verified against the modernised text. Verified
-modernised/source context belongs in the next stage.
+the most frequently assigned label. The first ten rows appear in the summary 
+figure (ten is just a number chosen for readability on a single page.)

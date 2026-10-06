@@ -566,9 +566,8 @@ for language in OUTPUT_LANGUAGES:
     language_directory = figures_directory / language
     text = CHART_TEXT[language]
 
-    figure_height = max(8.0, 4.8 + 0.46 * len(displayed_error_labels_df))
-    fig, ax = plt.subplots(figsize = (12, figure_height))
-    fig.subplots_adjust(top = 0.72, bottom = 0.15, left = 0.43, right = 0.92)
+    fig, ax = plt.subplots(figsize = (12, 7.2))
+    fig.subplots_adjust(top = 0.72, bottom = 0.17, left = 0.34, right = 0.94)
     y_positions = list(range(len(displayed_error_labels_df)))
 
     for y_position, (_, row) in zip(
@@ -601,6 +600,11 @@ for language in OUTPUT_LANGUAGES:
 
     ax.set_yticks(y_positions)
     ax.set_yticklabels(displayed_error_labels_df["display_label"])
+    y_label_x = (0.08 - ax.get_position().x0) / ax.get_position().width
+    for label in ax.get_yticklabels():
+        label.set_x(y_label_x)
+        label.set_horizontalalignment("left")
+        label.set_multialignment("left")
     ax.set_xlabel(text["frequent_error_labels"]["x_label"])
     ax.grid(axis = "x")
     ax.set_axisbelow(True)
@@ -633,8 +637,8 @@ for language in OUTPUT_LANGUAGES:
         .fillna(0)
     )
 
-    fig, ax = plt.subplots(figsize = (11.5, 8.0))
-    fig.subplots_adjust(top = 0.72, bottom = 0.17, left = 0.36, right = 0.92)
+    fig, ax = plt.subplots(figsize = (12, 7.2))
+    fig.subplots_adjust(top = 0.72, bottom = 0.17, left = 0.29, right = 0.94)
     y_positions = list(range(len(comparison_df)))
 
     # Light connecting lines instead of another set of bars
@@ -661,6 +665,11 @@ for language in OUTPUT_LANGUAGES:
 
     ax.set_yticks(y_positions)
     ax.set_yticklabels([fill(category, 30) for category in comparison_df.index])
+    y_label_x = (0.08 - ax.get_position().x0) / ax.get_position().width
+    for label in ax.get_yticklabels():
+        label.set_x(y_label_x)
+        label.set_horizontalalignment("left")
+        label.set_multialignment("left")
     ax.invert_yaxis()
     ax.set_xlabel(text["categories_by_model"]["x_label"])
     ax.grid(axis = "x")
